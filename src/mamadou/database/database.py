@@ -9,9 +9,9 @@ from mamadou.lesson.models.lesson_model import LessonModel
 from mamadou.question.models.question_model import QuestionModel
 
 # MongoDB connection settings
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "mamadou")
-
+MONGODB_URL = os.getenv("MONGODB_URL")
+DATABASE_NAME = os.getenv("DATABASE_NAME")
+##, "mongodb://localhost:27017"  "mamadou"
 # Global MongoDB client instance
 client: Optional[AsyncIOMotorClient] = None
 
