@@ -1,0 +1,50 @@
+from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient
+from typing import Optional
+import os
+
+from mamadou.auth.models.user_model import UserModel
+
+# MongoDB connection settings
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "mamadou")
+
+# Global MongoDB client instance
+client: Optional[AsyncIOMotorClient] = None
+
+
+async def initialize_database():
+    """
+    Initialize MongoDB and Beanie ODM
+    """
+    global client
+    client = AsyncIOMotorClient(MONGODB_URL)
+
+    await init_beanie(
+        database=client[DATABASE_NAME],
+        document_models=[
+            UserModel
+
+        ],
+    )
+
+    print(f"✅ Connected to MongoDB database: {DATABASE_NAME}")
+
+
+async def close_database():
+    """
+    Close MongoDB connection
+    """
+    global client
+    if client:
+        client.close()
+        print("👋 MongoDB connection closed.")
+
+
+def get_database():
+    """
+    Return MongoDB database instance
+    """
+    if client is None:
+        raise RuntimeError("Database not initialized. Call initialize_database first.")
+    return client[DATABASE_NAME]
