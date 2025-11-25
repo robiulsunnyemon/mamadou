@@ -1,24 +1,24 @@
 # ---- Base image ----
 FROM python:3.11-slim
 
-# ---- Set working directory ----
+# ---- Working directory ----
 WORKDIR /app
 
-# ---- Install Poetry ----
+# ---- সব ফাইল কপি করুন ----
+COPY . .
+
+# ---- Poetry ইন্সটল করুন ----
 RUN pip install --no-cache-dir poetry
 
-# ---- Copy project files ----
-COPY pyproject.toml poetry.lock* ./
-
-# ---- Install dependencies without installing the root package ----
+# ---- dependencies ইন্সটল করুন (--no-root বাদ দিন) ----
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root
+    && poetry install --no-interaction --no-ansi
 
-# ---- Copy source code ----
-COPY ./src ./src
+# ---- PYTHONPATH সেট করুন ----
+ENV PYTHONPATH=/app/src:$PYTHONPATH
 
-# ---- Expose port ----
+# ---- Port ----
 EXPOSE 8000
 
-# ---- Run FastAPI with Uvicorn ----
-CMD ["uvicorn", "src.mamadou.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ---- Run the app ----
+CMD ["uvicorn", "mamadou.main:app", "--host", "0.0.0.0", "--port", "8000"]
