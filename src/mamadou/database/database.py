@@ -4,6 +4,9 @@ from typing import Optional
 import os
 
 from mamadou.auth.models.user_model import UserModel
+from mamadou.course.models.course_model import CourseModel
+from mamadou.lesson.models.lesson_model import LessonModel
+from mamadou.question.models.question_model import QuestionModel
 
 # MongoDB connection settings
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
@@ -23,7 +26,10 @@ async def initialize_database():
     await init_beanie(
         database=client[DATABASE_NAME],
         document_models=[
-            UserModel
+            UserModel,
+            CourseModel,
+            LessonModel,
+            QuestionModel
 
         ],
     )

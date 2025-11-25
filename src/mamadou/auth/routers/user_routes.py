@@ -8,7 +8,7 @@ from mamadou.utils.get_hashed_password import get_hashed_password,verify_passwor
 from mamadou.utils.otp_generate import generate_otp
 from mamadou.utils.token_generation import create_access_token
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["Auth & User"])
 
 
 # GET all users
