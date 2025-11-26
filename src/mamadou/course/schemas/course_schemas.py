@@ -1,6 +1,9 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
 from datetime import datetime
+
+from mamadou.lesson.schemas.lesson_schemas import LessonResponse
+
 
 # Schema for creating new Course
 class CourseCreate(BaseModel):
@@ -20,6 +23,8 @@ class CourseResponse(BaseModel):
     name: str
     description: str
     image_url: str
+    lessons: List[LessonResponse] = []  # Nested lessons
+    total_questions: int = 0  # New field for total questions in this course
     created_at: datetime
     updated_at: datetime
 

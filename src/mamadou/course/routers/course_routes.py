@@ -2,30 +2,96 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from mamadou.course.models.course_model import CourseModel
 from mamadou.course.schemas.course_schemas import CourseCreate, CourseUpdate, CourseResponse
+from mamadou.lesson.models.lesson_model import LessonModel
+from mamadou.question.models.question_model import QuestionModel
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
-# GET all courses
+
+
+# # GET all courses with nested lessons
+# @router.get("/", response_model=List[CourseResponse])
+# async def get_all_courses(skip: int = 0, limit: int = 10):
+#     """
+#     Get all courses with pagination and nested lessons
+#     """
+#     courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
+#
+#     course_responses = []
+#     for course in courses:
+#         # Fetch lessons for each course
+#         lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
+#
+#         # Convert course to dict and add lessons
+#         course_dict = course.dict()
+#         course_dict["lessons"] = lessons
+#
+#         course_responses.append(CourseResponse(**course_dict))
+#
+#     return course_responses
+
+
+# GET all courses with nested lessons and total questions
 @router.get("/", response_model=List[CourseResponse])
 async def get_all_courses(skip: int = 0, limit: int = 10):
-    
     """
-    Get all courses with pagination
+    Get all courses with pagination, nested lessons and total questions count
     """
     courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
-    return courses
 
-# GET course by ID
+    course_responses = []
+    for course in courses:
+        # Fetch lessons for each course
+        lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
+
+        # Calculate total questions for this course
+        total_questions = await QuestionModel.find(QuestionModel.course_id == course.id).count()
+
+        # Convert course to dict and add nested data
+        course_dict = course.dict()
+        course_dict["lessons"] = lessons
+        course_dict["total_questions"] = total_questions
+
+        course_responses.append(CourseResponse(**course_dict))
+
+    return course_responses
+
+
+
+
+# GET course by ID with nested lessons and total questions
 @router.get("/{course_id}", response_model=CourseResponse)
 async def get_course(course_id: str):
-    
     """
-    Get course by ID
+    Get course by ID with nested lessons and total questions count
     """
     course = await CourseModel.get(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    return course
+
+    # Fetch lessons for this specific course
+    lessons = await LessonModel.find(LessonModel.course_id == course_id).to_list()
+
+    # Calculate total questions for this course
+    total_questions = await QuestionModel.find(QuestionModel.course_id == course_id).count()
+
+    # Convert course to dict and add nested data
+    course_dict = course.dict()
+    course_dict["lessons"] = lessons
+    course_dict["total_questions"] = total_questions
+
+    return CourseResponse(**course_dict)
+
+
+
+
+
+
+
+
+
+
+
 
 # POST create new course
 @router.post("/", response_model=CourseResponse)
@@ -67,3 +133,48 @@ async def delete_course(course_id: str):
 
     await course.delete()
     return {"message": "Course deleted successfully"}
+
+
+# Bulk create with custom response
+@router.post("/bulk-create")
+async def bulk_create_courses_with_custom_response(courses_data: List[CourseCreate]):
+    """
+    Create multiple courses with custom response including success count
+    """
+    if not courses_data:
+        raise HTTPException(status_code=400, detail="No courses provided")
+
+    success_count = 0
+    failed_courses = []
+    created_courses = []
+
+    for course_data in courses_data:
+        try:
+            # Check for duplicates
+            existing_course = await CourseModel.find_one(CourseModel.name == course_data.name)
+            if existing_course:
+                failed_courses.append({
+                    "name": course_data.name,
+                    "error": "Course with this name already exists"
+                })
+                continue
+
+            course_dict = course_data.model_dump()
+            course = CourseModel(**course_dict)
+            await course.create()
+            created_courses.append(course)
+            success_count += 1
+
+        except Exception as e:
+            failed_courses.append({
+                "name": course_data.name,
+                "error": str(e)
+            })
+
+    return {
+        "message": f"Bulk create completed. Success: {success_count}, Failed: {len(failed_courses)}",
+        "success_count": success_count,
+        "failed_count": len(failed_courses),
+        "created_courses": created_courses,
+        "failed_courses": failed_courses
+    }

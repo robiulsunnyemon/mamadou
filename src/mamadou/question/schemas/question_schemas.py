@@ -34,3 +34,13 @@ class QuestionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Bulk Question Creation Schema
+class BulkQuestionCreate(BaseModel):
+    questions: List[QuestionCreate]
+
+class BulkQuestionResponse(BaseModel):
+    message: str
+    created_count: int
+    questions: List[QuestionResponse]

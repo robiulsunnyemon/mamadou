@@ -3,11 +3,14 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from mamadou.database.database import initialize_database, close_database
 from mamadou.auth.routers.user_routes import router as auth_router
+from mamadou.frequent_question.routers.frequent_question_routes import router as frequent_question_router
 from mamadou.course.routers.course_routes import router as course_router
 from mamadou.lesson.routers.lesson_routes import router as lesson_router
 from mamadou.question.routers.question_routes import router as question_router
-
-
+from mamadou.answer.routers.answer_routes import router as answer_router
+from mamadou.progress_lesson.routers.progress_lesson_routes import router as progress_lesson_router
+from mamadou.leader_board.routers.leader_board_routes import router as leaderboard_router
+from mamadou.dashboard.routers.dashboard import router as dashboard_router
 
 @asynccontextmanager
 async def lifespan_context(_: FastAPI):
@@ -37,6 +40,12 @@ async def root():
 
 
 app.include_router(auth_router)
+app.include_router(dashboard_router)
+app.include_router(frequent_question_router)
 app.include_router(course_router)
 app.include_router(lesson_router)
 app.include_router(question_router)
+app.include_router(answer_router)
+app.include_router(progress_lesson_router)
+app.include_router(leaderboard_router)
+

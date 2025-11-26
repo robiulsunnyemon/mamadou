@@ -4,6 +4,7 @@ from typing import Optional
 from datetime import datetime, timezone
 import uuid
 
+from mamadou.utils.account_status import AccountStatus
 from mamadou.utils.user_role import UserRole
 
 
@@ -15,6 +16,7 @@ class UserModel(Document):
     phone_number: Optional[str] = None
     password: Optional[str] = None
     is_verified: bool = False
+    account_status: AccountStatus = Field(default=AccountStatus.ACTIVE)
     otp: Optional[str] = None
     role: Optional[UserRole] = Field(default=UserRole.USER)
     profile_image: Optional[str] = Field(default="https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png")
@@ -29,3 +31,5 @@ class UserModel(Document):
 
     class Settings:
         name = "users"
+
+

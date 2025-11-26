@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends,status
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm
 from mamadou.auth.models.user_model import UserModel
-from mamadou.auth.schemas.user_schemas import UserCreate, UserUpdate, UserResponse, VerifyOTP
+from mamadou.auth.schemas.user_schemas import UserCreate, UserUpdate, UserResponse, VerifyOTP, ResetPasswordRequest, \
+    ResendOTPRequest
 from mamadou.utils.email_config import SendOtpModel
 from mamadou.utils.get_hashed_password import get_hashed_password,verify_password
 from mamadou.utils.otp_generate import generate_otp
@@ -101,7 +102,6 @@ async def verify_otp(user:VerifyOTP):
 
 
 
-
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     db_user = await UserModel.find_one(
@@ -124,8 +124,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/resend_otp", status_code=status.HTTP_200_OK)
-async def resend_otp(email:str):
-    db_user = await UserModel.find_one(UserModel.email == email)
+async def resend_otp(request: ResendOTPRequest):
+    db_user = await UserModel.find_one(UserModel.email == request.email)
     if db_user is None :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
     otp=generate_otp()
@@ -144,8 +144,8 @@ async def resend_otp(email:str):
 
 
 @router.post("/reset_password", status_code=status.HTTP_200_OK)
-async def reset_password(new_password:str,email:str):
-    db_user = await UserModel.find_one(UserModel.email == email)
+async def reset_password(request: ResetPasswordRequest):
+    db_user = await UserModel.find_one(UserModel.email == request.email)
     if db_user is None :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
 
@@ -153,7 +153,7 @@ async def reset_password(new_password:str,email:str):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Your account is not verified with otp")
 
-    hashed_password = get_hashed_password(new_password)
+    hashed_password = get_hashed_password(request.new_password)
     db_user.password = hashed_password
     await db_user.save()
     return {"message":"successfully reset password"}

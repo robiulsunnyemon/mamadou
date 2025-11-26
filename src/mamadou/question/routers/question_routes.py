@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException,status
 from typing import List
+
+from mamadou.course.models.course_model import CourseModel
+from mamadou.lesson.models.lesson_model import LessonModel
 from mamadou.question.models.question_model import QuestionModel
-from mamadou.question.schemas.question_schemas import QuestionCreate, QuestionUpdate, QuestionResponse
+from mamadou.question.schemas.question_schemas import QuestionCreate, QuestionUpdate, QuestionResponse, \
+    BulkQuestionResponse, BulkQuestionCreate
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
@@ -67,3 +71,60 @@ async def delete_question(question_id: str):
 
     await question.delete()
     return {"message": "Question deleted successfully"}
+
+
+# POST create bulk questions
+@router.post("/bulk", response_model=BulkQuestionResponse, status_code=status.HTTP_201_CREATED)
+async def create_bulk_questions(bulk_data: BulkQuestionCreate):
+    """
+    Create multiple questions for different lesson IDs and course IDs
+    """
+    created_questions = []
+
+    # Validate all lesson IDs and course IDs first
+    lesson_ids = {question.lesson_id for question in bulk_data.questions}
+    course_ids = {question.course_id for question in bulk_data.questions}
+
+    # Check if all lessons exist
+    existing_lessons = {}
+    for lesson_id in lesson_ids:
+        lesson = await LessonModel.get(lesson_id)
+        if not lesson:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Lesson with ID {lesson_id} not found"
+            )
+        existing_lessons[lesson_id] = lesson
+
+    # Check if all courses exist
+    existing_courses = {}
+    for course_id in course_ids:
+        course = await CourseModel.get(course_id)
+        if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Course with ID {course_id} not found"
+            )
+        existing_courses[course_id] = course
+
+    # Validate that lessons belong to their respective courses
+    for question_data in bulk_data.questions:
+        lesson = existing_lessons[question_data.lesson_id]
+        if lesson.course_id != question_data.course_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Lesson {question_data.lesson_id} does not belong to course {question_data.course_id}"
+            )
+
+    # Create all questions
+    for question_data in bulk_data.questions:
+        question_dict = question_data.model_dump()
+        question = QuestionModel(**question_dict)
+        await question.create()
+        created_questions.append(question)
+
+    return BulkQuestionResponse(
+        message="Questions created successfully",
+        created_count=len(created_questions),
+        questions=created_questions
+    )

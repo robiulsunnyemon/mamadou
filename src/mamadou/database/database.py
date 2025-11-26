@@ -3,16 +3,21 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
 import os
 
+from mamadou.answer.models.answer_model import AnswerModel
 from mamadou.auth.models.user_model import UserModel
 from mamadou.course.models.course_model import CourseModel
+from mamadou.frequent_question.models.frequent_question_model import FrequentQuestionModel
+from mamadou.leader_board.models.leader_board_model import LeaderBoardModel
 from mamadou.lesson.models.lesson_model import LessonModel
+from mamadou.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from mamadou.question.models.question_model import QuestionModel
 
 # MongoDB connection settings
-MONGODB_URL = os.getenv("MONGODB_URL")
-DATABASE_NAME = os.getenv("DATABASE_NAME")
-##, "mongodb://localhost:27017"  "mamadou"
-# Global MongoDB client instance
+# MongoDB connection settings
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "mamadou")
+
+
 client: Optional[AsyncIOMotorClient] = None
 
 
@@ -27,9 +32,14 @@ async def initialize_database():
         database=client[DATABASE_NAME],
         document_models=[
             UserModel,
+            FrequentQuestionModel,
             CourseModel,
             LessonModel,
-            QuestionModel
+            QuestionModel,
+            AnswerModel,
+            ProgressLessonModel,
+            LeaderBoardModel
+
 
         ],
     )

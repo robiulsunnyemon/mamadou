@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr,Field
 from typing import Optional
 from datetime import datetime
 
+from mamadou.utils.account_status import AccountStatus
 from mamadou.utils.user_role import UserRole
 
 
@@ -34,6 +35,7 @@ class UserResponse(BaseModel):
     updated_at: datetime
     role: Optional[UserRole] = Field(default=UserRole.USER)
     otp:Optional[str]
+    account_status: AccountStatus
 
     class Config:
         from_attributes = True
@@ -47,3 +49,14 @@ class UserLogin(BaseModel):
 class VerifyOTP(BaseModel):
     email: EmailStr
     otp: str
+
+
+
+class ResendOTPRequest(BaseModel):
+    email: EmailStr
+
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    new_password: str
