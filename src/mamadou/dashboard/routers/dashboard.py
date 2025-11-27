@@ -24,9 +24,9 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 
-@router.get("/extended/{target_user_id}", response_model=ExtendedDashboardResponse)
+@router.get("/users/{id}", response_model=ExtendedDashboardResponse)
 async def get_extended_dashboard_stats(
-        target_user_id: str,
+        id: str,
 
 ):
     """
@@ -39,7 +39,7 @@ async def get_extended_dashboard_stats(
     """
 
     # Get user details
-    user = await UserModel.get(target_user_id)
+    user = await UserModel.get(id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -61,7 +61,7 @@ async def get_extended_dashboard_stats(
     )
 
     # Get total_score from LeaderBoardModel
-    leaderboard_data = await LeaderBoardModel.find_one(LeaderBoardModel.user_id == target_user_id)
+    leaderboard_data = await LeaderBoardModel.find_one(LeaderBoardModel.user_id == id)
     total_score = leaderboard_data.total_score if leaderboard_data else 0
 
     # Get total lessons count
@@ -72,7 +72,7 @@ async def get_extended_dashboard_stats(
     success_rate = (total_questions * total_score) / 100 if total_questions > 0 else 0.0
 
     # Get in-progress lessons (progress > 0 and < 100)
-    in_progress_lessons = await get_in_progress_lessons(target_user_id)
+    in_progress_lessons = await get_in_progress_lessons(id)
 
     return ExtendedDashboardResponse(
         total_score=total_score,
@@ -134,8 +134,9 @@ async def get_in_progress_lessons(user_id: str) -> List[FilteredLessonResponse]:
 
 
 # GET course by ID with nested lessons and total questions
-@router.get("/{course_id}", response_model=CourseResponse)
-async def get_course(course_id: str):
+@router.get("/courses/{id}", response_model=CourseResponse)
+async def get_course(id: str):
+    course_id=id
     """
     Get course by ID with nested lessons and total questions count
     """
@@ -222,7 +223,7 @@ async def get_question_statistics(
 
 
 # GET most difficult questions (highest wrong percentage) - FIXED VERSION
-@router.get("/statistics/most-difficult/", response_model=List[dict])
+@router.get("/questions/statistics/most-difficult/", response_model=List[dict])
 async def get_most_difficult_questions(
         limit: int = 20,
         min_attempts: int = 5

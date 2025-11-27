@@ -20,13 +20,13 @@ async def get_all_questions(skip: int = 0, limit: int = 10):
     return questions
 
 # GET question by ID
-@router.get("/{question_id}", response_model=QuestionResponse,status_code=status.HTTP_200_OK)
-async def get_question(question_id: str):
+@router.get("/{id}", response_model=QuestionResponse,status_code=status.HTTP_200_OK)
+async def get_question(id: str):
     
     """
     Get question by ID
     """
-    question = await QuestionModel.get(question_id)
+    question = await QuestionModel.get(id)
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
     return question
@@ -44,28 +44,28 @@ async def create_question(question_data: QuestionCreate):
     return question
 
 # PATCH update question
-@router.patch("/{question_id}", response_model=QuestionResponse,status_code=status.HTTP_200_OK)
-async def update_question(question_id: str, question_data: QuestionUpdate):
+@router.patch("/{id}", response_model=QuestionResponse,status_code=status.HTTP_200_OK)
+async def update_question(id: str, question_data: QuestionUpdate):
     
     """
     Update question information
     """
-    question = await QuestionModel.get(question_id)
+    question = await QuestionModel.get(id)
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
 
     update_data = question_data.model_dump(exclude_unset=True)
     await question.update({"$set": update_data})
-    return await QuestionModel.get(question_id)
+    return await QuestionModel.get(id)
 
 # DELETE question
-@router.delete("/{question_id}",status_code=status.HTTP_200_OK)
-async def delete_question(question_id: str):
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
+async def delete_question(id: str):
     
     """
     Delete question by ID
     """
-    question = await QuestionModel.get(question_id)
+    question = await QuestionModel.get(id)
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
 

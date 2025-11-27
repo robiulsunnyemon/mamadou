@@ -8,7 +8,7 @@ from mamadou.frequent_question.models.frequent_question_model import FrequentQue
 from mamadou.frequent_question.schemas.frequent_question_schemas import FrequentquestionCreate, FrequentquestionUpdate, FrequentquestionResponse
 from mamadou.utils.user_info import get_user_info
 
-router = APIRouter(prefix="/frequent_questions", tags=["frequent_questions"])
+router = APIRouter(prefix="/fqn", tags=["frequent_questions"])
 
 # GET all frequent_questions
 @router.get("/", response_model=List[FrequentquestionResponse],status_code=status.HTTP_200_OK)
@@ -21,13 +21,13 @@ async def get_all_frequent_questions(skip: int = 0, limit: int = 10):
     return frequent_questions
 
 # GET frequent_question by ID
-@router.get("/{frequent_question_id}", response_model=FrequentquestionResponse,status_code=status.HTTP_200_OK)
-async def get_frequent_question(frequent_question_id: str):
+@router.get("/{id}", response_model=FrequentquestionResponse,status_code=status.HTTP_200_OK)
+async def get_frequent_question(id: str):
     
     """
     Get frequent_question by ID
     """
-    frequent_question = await FrequentQuestionModel.get(frequent_question_id)
+    frequent_question = await FrequentQuestionModel.get(id)
     if not frequent_question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="FrequentQuestion not found")
     return frequent_question
@@ -54,28 +54,28 @@ async def create_frequent_question(frequent_question_data: FrequentquestionCreat
 
 
 # PATCH update frequent_question
-@router.patch("/{frequent_question_id}", response_model=FrequentquestionResponse,status_code=status.HTTP_200_OK)
-async def update_frequent_question(frequent_question_id: str, frequent_question_data: FrequentquestionUpdate):
+@router.patch("/{id}", response_model=FrequentquestionResponse,status_code=status.HTTP_200_OK)
+async def update_frequent_question(id: str, frequent_question_data: FrequentquestionUpdate):
     
     """
     Update frequent_question information
     """
-    frequent_question = await FrequentQuestionModel.get(frequent_question_id)
+    frequent_question = await FrequentQuestionModel.get(id)
     if not frequent_question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="FrequentQuestion not found")
 
     update_data = frequent_question_data.model_dump(exclude_unset=True)
     await frequent_question.update({"$set": update_data})
-    return await FrequentQuestionModel.get(frequent_question_id)
+    return await FrequentQuestionModel.get(id)
 
 # DELETE frequent_question
-@router.delete("/{frequent_question_id}",status_code=status.HTTP_200_OK)
-async def delete_frequent_question(frequent_question_id: str):
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
+async def delete_frequent_question(id: str):
     
     """
     Delete frequent_question by ID
     """
-    frequent_question = await FrequentQuestionModel.get(frequent_question_id)
+    frequent_question = await FrequentQuestionModel.get(id)
     if not frequent_question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="FrequentQuestion not found")
 

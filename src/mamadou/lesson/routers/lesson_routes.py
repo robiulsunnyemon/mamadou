@@ -15,18 +15,10 @@ from mamadou.utils.user_info import get_user_info
 
 router = APIRouter(prefix="/lessons", tags=["lessons"])
 
-# # GET all lessons
-# @router.get("/", response_model=List[LessonResponse],status_code=status.HTTP_200_OK)
-# async def get_all_lessons(skip: int = 0, limit: int = 10):
-#
-#     """
-#     Get all lessons with pagination
-#     """
-#     lessons = await LessonModel.find_all().skip(skip).limit(limit).to_list()
-#     return lessons
+
 
 # GET all lessons without user dependency
-@router.get("/public/", response_model=List[LessonResponse], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=List[LessonResponse], status_code=status.HTTP_200_OK)
 async def get_all_lessons_public(
         skip: int = 0,
         limit: int = 10
@@ -57,8 +49,8 @@ async def get_all_lessons_public(
 
 
 # GET lesson by ID - simplified
-@router.get("/{lesson_id}", response_model=LessonResponse, status_code=status.HTTP_200_OK)
-async def get_lesson(lesson_id: str, user: dict = Depends(get_user_info)):
+@router.get("/{id}", response_model=LessonResponse, status_code=status.HTTP_200_OK)
+async def get_lesson(id: str, user: dict = Depends(get_user_info)):
     """
     Get lesson by ID with simplified progress
     """
@@ -67,19 +59,19 @@ async def get_lesson(lesson_id: str, user: dict = Depends(get_user_info)):
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    lesson = await LessonModel.get(lesson_id)
+    lesson = await LessonModel.get(id)
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
 
     # Fetch questions for this specific lesson
-    questions = await QuestionModel.find(QuestionModel.lesson_id == lesson_id).to_list()
+    questions = await QuestionModel.find(QuestionModel.lesson_id == id).to_list()
     total_questions = len(questions)
 
     # Calculate progress percentage
     my_progress = 0.0
     if user_id:
         progress_data = await ProgressLessonModel.find_one(
-            ProgressLessonModel.lesson_id == lesson_id,
+            ProgressLessonModel.lesson_id == id,
             ProgressLessonModel.user_id == user_id
         )
         if progress_data:
@@ -91,7 +83,7 @@ async def get_lesson(lesson_id: str, user: dict = Depends(get_user_info)):
         # Corrected query syntax for Beanie ODM
         user_answers = await AnswerModel.find(
             AnswerModel.user_id == user_id,
-            AnswerModel.lesson_id == lesson_id
+            AnswerModel.lesson_id == id
         ).to_list()
 
         total_right_answers = sum(1 for answer in user_answers if answer.score == 1)
@@ -131,28 +123,28 @@ async def create_lesson(lesson_data: LessonCreate):
     return lesson
 
 # PATCH update lesson
-@router.patch("/{lesson_id}", response_model=LessonResponse,status_code=status.HTTP_200_OK)
-async def update_lesson(lesson_id: str, lesson_data: LessonUpdate):
+@router.patch("/{id}", response_model=LessonResponse,status_code=status.HTTP_200_OK)
+async def update_lesson(id: str, lesson_data: LessonUpdate):
     
     """
     Update lesson information
     """
-    lesson = await LessonModel.get(lesson_id)
+    lesson = await LessonModel.get(id)
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
 
     update_data = lesson_data.model_dump(exclude_unset=True)
     await lesson.update({"$set": update_data})
-    return await LessonModel.get(lesson_id)
+    return await LessonModel.get(id)
 
 # DELETE lesson
-@router.delete("/{lesson_id}",status_code=status.HTTP_200_OK)
-async def delete_lesson(lesson_id: str):
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
+async def delete_lesson(id: str):
     
     """
     Delete lesson by ID
     """
-    lesson = await LessonModel.get(lesson_id)
+    lesson = await LessonModel.get(id)
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
 

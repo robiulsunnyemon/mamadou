@@ -3,7 +3,7 @@ from typing import List
 from mamadou.leader_board.models.leader_board_model import LeaderBoardModel
 from mamadou.leader_board.schemas.leader_board_schemas import LeaderboardCreate, LeaderboardUpdate, LeaderboardResponse
 
-router = APIRouter(prefix="/leader_boards", tags=["leader_boards"])
+router = APIRouter(prefix="/leaderboards", tags=["leaderboards"])
 
 # GET all leader_boards
 @router.get("/", response_model=List[LeaderboardResponse],status_code=status.HTTP_200_OK)
@@ -16,13 +16,13 @@ async def get_all_leader_boards(skip: int = 0, limit: int = 10):
     return leader_boards
 
 # GET leader_board by ID
-@router.get("/{leader_board_id}", response_model=LeaderboardResponse,status_code=status.HTTP_200_OK)
-async def get_leader_board(leader_board_id: str):
+@router.get("/{id}", response_model=LeaderboardResponse,status_code=status.HTTP_200_OK)
+async def get_leader_board(id: str):
     
     """
     Get leader_board by ID
     """
-    leader_board = await LeaderBoardModel.get(leader_board_id)
+    leader_board = await LeaderBoardModel.get(id)
     if not leader_board:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="LeaderBoard not found")
     return leader_board
@@ -40,28 +40,28 @@ async def create_leader_board(leader_board_data: LeaderboardCreate):
     return leader_board
 
 # PATCH update leader_board
-@router.patch("/{leader_board_id}", response_model=LeaderboardResponse,status_code=status.HTTP_200_OK)
-async def update_leader_board(leader_board_id: str, leader_board_data: LeaderboardUpdate):
+@router.patch("/{id}", response_model=LeaderboardResponse,status_code=status.HTTP_200_OK)
+async def update_leader_board(id: str, leader_board_data: LeaderboardUpdate):
     
     """
     Update leader_board information
     """
-    leader_board = await LeaderBoardModel.get(leader_board_id)
+    leader_board = await LeaderBoardModel.get(id)
     if not leader_board:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="LeaderBoard not found")
 
     update_data = leader_board_data.model_dump(exclude_unset=True)
     await leader_board.update({"$set": update_data})
-    return await LeaderBoardModel.get(leader_board_id)
+    return await LeaderBoardModel.get(id)
 
 # DELETE leader_board
-@router.delete("/{leader_board_id}",status_code=status.HTTP_200_OK)
-async def delete_leader_board(leader_board_id: str):
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
+async def delete_leader_board(id: str):
     
     """
     Delete leader_board by ID
     """
-    leader_board = await LeaderBoardModel.get(leader_board_id)
+    leader_board = await LeaderBoardModel.get(id)
     if not leader_board:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="LeaderBoard not found")
 

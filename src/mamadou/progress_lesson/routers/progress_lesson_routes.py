@@ -10,7 +10,7 @@ from mamadou.progress_lesson.schemas.progress_lesson_schemas import Progressless
 from mamadou.question.models.question_model import QuestionModel
 from mamadou.utils.user_info import get_user_info
 
-router = APIRouter(prefix="/progress_lessons", tags=["progress_lessons"])
+router = APIRouter(prefix="/progress", tags=["progress_lessons"])
 
 # GET all progress_lessons
 @router.get("/", response_model=List[ProgresslessonResponse],status_code=status.HTTP_200_OK)
@@ -23,13 +23,13 @@ async def get_all_progress_lessons(skip: int = 0, limit: int = 10):
     return progress_lessons
 
 # GET progress_lesson by ID
-@router.get("/{progress_lesson_id}", response_model=ProgresslessonResponse,status_code=status.HTTP_200_OK)
-async def get_progress_lesson(progress_lesson_id: str):
+@router.get("/{id}", response_model=ProgresslessonResponse,status_code=status.HTTP_200_OK)
+async def get_progress_lesson(id: str):
     
     """
     Get progress_lesson by ID
     """
-    progress_lesson = await ProgressLessonModel.get(progress_lesson_id)
+    progress_lesson = await ProgressLessonModel.get(id)
     if not progress_lesson:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ProgressLesson not found")
     return progress_lesson
@@ -47,28 +47,28 @@ async def create_progress_lesson(progress_lesson_data: ProgresslessonCreate):
     return progress_lesson
 
 # PATCH update progress_lesson
-@router.patch("/{progress_lesson_id}", response_model=ProgresslessonResponse,status_code=status.HTTP_200_OK)
-async def update_progress_lesson(progress_lesson_id: str, progress_lesson_data: ProgresslessonUpdate):
+@router.patch("/{id}", response_model=ProgresslessonResponse,status_code=status.HTTP_200_OK)
+async def update_progress_lesson(id: str, progress_lesson_data: ProgresslessonUpdate):
     
     """
     Update progress_lesson information
     """
-    progress_lesson = await ProgressLessonModel.get(progress_lesson_id)
+    progress_lesson = await ProgressLessonModel.get(id)
     if not progress_lesson:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ProgressLesson not found")
 
     update_data = progress_lesson_data.model_dump(exclude_unset=True)
     await progress_lesson.update({"$set": update_data})
-    return await ProgressLessonModel.get(progress_lesson_id)
+    return await ProgressLessonModel.get(id)
 
 # DELETE progress_lesson
-@router.delete("/{progress_lesson_id}",status_code=status.HTTP_200_OK)
-async def delete_progress_lesson(progress_lesson_id: str):
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
+async def delete_progress_lesson(id: str):
     
     """
     Delete progress_lesson by ID
     """
-    progress_lesson = await ProgressLessonModel.get(progress_lesson_id)
+    progress_lesson = await ProgressLessonModel.get(id)
     if not progress_lesson:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ProgressLesson not found")
 
@@ -77,7 +77,7 @@ async def delete_progress_lesson(progress_lesson_id: str):
 
 
 # GET lessons by progress range
-@router.get("/progress/filter/", response_model=List[FilteredLessonResponse])
+@router.get("/filter/", response_model=List[FilteredLessonResponse])
 async def get_lessons_by_progress_range(
         user: dict = Depends(get_user_info),
         min_progress: float = 0.0,

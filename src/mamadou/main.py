@@ -35,17 +35,17 @@ app.add_middleware(
 
 @app.get("/", tags=["Root"])
 async def root():
-    return {"message": "Best wishes from Mamadou Education Development team"}
+    return {"message": "Mamadou Api is working"}
 
 
 
-app.include_router(auth_router)
-app.include_router(dashboard_router)
-app.include_router(frequent_question_router)
-app.include_router(course_router)
-app.include_router(lesson_router)
-app.include_router(question_router)
-app.include_router(answer_router)
-app.include_router(progress_lesson_router)
-app.include_router(leaderboard_router)
+app.include_router(auth_router,prefix="/api/v1")
+app.include_router(dashboard_router,prefix="/api/v1")
+app.include_router(frequent_question_router,prefix="/api/v1")
+app.include_router(course_router,prefix="/api/v1")
+app.include_router(lesson_router,prefix="/api/v1")
+app.include_router(question_router,prefix="/api/v1")
+app.include_router(answer_router,prefix="/api/v1")
+app.include_router(progress_lesson_router,prefix="/api/v1")
+app.include_router(leaderboard_router,prefix="/api/v1")
 

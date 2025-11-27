@@ -26,12 +26,12 @@ async def get_all_answers(skip: int = 0, limit: int = 10):
 
 
 # GET answer by ID
-@router.get("/{answer_id}", response_model=AnswerResponse, status_code=status.HTTP_200_OK)
-async def get_answer(answer_id: str):
+@router.get("/{id}", response_model=AnswerResponse, status_code=status.HTTP_200_OK)
+async def get_answer(id: str):
     """
     Get answer by ID
     """
-    answer = await AnswerModel.get(answer_id)
+    answer = await AnswerModel.get(id)
     if not answer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer not found")
     return answer
@@ -165,28 +165,28 @@ async def create_answer(answer_data: AnswerCreate, user: dict = Depends(get_user
 
 
 # PATCH update answer
-@router.patch("/{answer_id}", response_model=AnswerResponse,status_code=status.HTTP_200_OK)
-async def update_answer(answer_id: str, answer_data: AnswerUpdate):
+@router.patch("/{id}", response_model=AnswerResponse,status_code=status.HTTP_200_OK)
+async def update_answer(id: str, answer_data: AnswerUpdate):
     
     """
     Update answer information
     """
-    answer = await AnswerModel.get(answer_id)
+    answer = await AnswerModel.get(id)
     if not answer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer not found")
 
     update_data = answer_data.model_dump(exclude_unset=True)
     await answer.update({"$set": update_data})
-    return await AnswerModel.get(answer_id)
+    return await AnswerModel.get(id)
 
 # DELETE answer
-@router.delete("/{answer_id}",status_code=status.HTTP_200_OK)
-async def delete_answer(answer_id: str):
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
+async def delete_answer(id: str):
     
     """
     Delete answer by ID
     """
-    answer = await AnswerModel.get(answer_id)
+    answer = await AnswerModel.get(id)
     if not answer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer not found")
 

@@ -9,26 +9,7 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 
-# # GET all courses with nested lessons
-# @router.get("/", response_model=List[CourseResponse])
-# async def get_all_courses(skip: int = 0, limit: int = 10):
-#     """
-#     Get all courses with pagination and nested lessons
-#     """
-#     courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
-#
-#     course_responses = []
-#     for course in courses:
-#         # Fetch lessons for each course
-#         lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
-#
-#         # Convert course to dict and add lessons
-#         course_dict = course.dict()
-#         course_dict["lessons"] = lessons
-#
-#         course_responses.append(CourseResponse(**course_dict))
-#
-#     return course_responses
+
 
 
 # GET all courses with nested lessons and total questions
@@ -60,20 +41,20 @@ async def get_all_courses(skip: int = 0, limit: int = 10):
 
 
 # GET course by ID with nested lessons and total questions
-@router.get("/{course_id}", response_model=CourseResponse)
-async def get_course(course_id: str):
+@router.get("/{id}", response_model=CourseResponse)
+async def get_course(id: str):
     """
     Get course by ID with nested lessons and total questions count
     """
-    course = await CourseModel.get(course_id)
+    course = await CourseModel.get(id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
     # Fetch lessons for this specific course
-    lessons = await LessonModel.find(LessonModel.course_id == course_id).to_list()
+    lessons = await LessonModel.find(LessonModel.course_id == id).to_list()
 
     # Calculate total questions for this course
-    total_questions = await QuestionModel.find(QuestionModel.course_id == course_id).count()
+    total_questions = await QuestionModel.find(QuestionModel.course_id == id).count()
 
     # Convert course to dict and add nested data
     course_dict = course.dict()
@@ -106,28 +87,28 @@ async def create_course(course_data: CourseCreate):
     return course
 
 # PATCH update course
-@router.patch("/{course_id}", response_model=CourseResponse)
-async def update_course(course_id: str, course_data: CourseUpdate):
+@router.patch("/{id}", response_model=CourseResponse)
+async def update_course(id: str, course_data: CourseUpdate):
     
     """
     Update course information
     """
-    course = await CourseModel.get(course_id)
+    course = await CourseModel.get(id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
     update_data = course_data.model_dump(exclude_unset=True)
     await course.update({"$set": update_data})
-    return await CourseModel.get(course_id)
+    return await CourseModel.get(id)
 
 # DELETE course
-@router.delete("/{course_id}")
-async def delete_course(course_id: str):
+@router.delete("/{id}")
+async def delete_course(id: str):
     
     """
     Delete course by ID
     """
-    course = await CourseModel.get(course_id)
+    course = await CourseModel.get(id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
