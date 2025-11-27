@@ -19,7 +19,7 @@ async def lifespan_context(_: FastAPI):
     await close_database()
 
 app = FastAPI(
-    title="Mamadou Education Platform",
+    title="RSE EduCare",
     description="Rest API",
     version="1.0.0",
     lifespan=lifespan_context,
@@ -33,9 +33,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/", tags=["Root"])
-async def root():
-    return {"message": "Mamadou Api is working"}
+@app.get("/", tags=["health"])
+async def health():
+    return {"message": "Api is working"}
 
 
 
