@@ -19,7 +19,7 @@ async def lifespan_context(_: FastAPI):
     await close_database()
 
 app = FastAPI(
-    title="RSE EduCare",
+    title="Mamadou RestAPI",
     description="Rest API",
     version="1.0.0",
     lifespan=lifespan_context,
