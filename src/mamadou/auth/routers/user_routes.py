@@ -14,7 +14,7 @@ router = APIRouter(prefix="/users", tags=["Auth & User"])
 
 # GET all users
 @router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
-async def get_all_users(skip: int = 0, limit: int = 10):
+async def get_all_users(skip: int = 0, limit: int = 20):
     """
     Get all users with pagination
     """
