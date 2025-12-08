@@ -4,19 +4,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserCreate, UserUpdate, UserResponse, VerifyOTP, ResetPasswordRequest, \
     ResendOTPRequest
-<<<<<<< HEAD:src/api_naturalize/auth/routers/user_routes.py
+
 from api_naturalize.utils.email_config import SendOtpModel
 from api_naturalize.utils.get_hashed_password import get_hashed_password,verify_password
 from api_naturalize.utils.otp_generate import generate_otp
 from api_naturalize.utils.token_generation import create_access_token
 
-=======
-from mamadou.utils.email_config import SendOtpModel
-from mamadou.utils.get_hashed_password import get_hashed_password,verify_password
-from mamadou.utils.otp_generate import generate_otp
-from mamadou.utils.token_generation import create_access_token
 import requests
->>>>>>> 9565b06501594719a23ac951fea9023c18fbe2fe:src/mamadou/auth/routers/user_routes.py
+
+
 router = APIRouter(prefix="/users", tags=["Auth & User"])
 
 
