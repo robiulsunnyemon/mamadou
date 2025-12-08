@@ -1,5 +1,5 @@
 [project]
-name = "mamadou"
+name = "api_naturalize"
 version = "0.1.0"
 description = ""
 authors = [
@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "mamadou", from = "src"}]
+packages = [{include = "api_naturalize", from = "src"}]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
