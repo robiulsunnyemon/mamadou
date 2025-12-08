@@ -4,17 +4,25 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserCreate, UserUpdate, UserResponse, VerifyOTP, ResetPasswordRequest, \
     ResendOTPRequest
+<<<<<<< HEAD:src/api_naturalize/auth/routers/user_routes.py
 from api_naturalize.utils.email_config import SendOtpModel
 from api_naturalize.utils.get_hashed_password import get_hashed_password,verify_password
 from api_naturalize.utils.otp_generate import generate_otp
 from api_naturalize.utils.token_generation import create_access_token
 
+=======
+from mamadou.utils.email_config import SendOtpModel
+from mamadou.utils.get_hashed_password import get_hashed_password,verify_password
+from mamadou.utils.otp_generate import generate_otp
+from mamadou.utils.token_generation import create_access_token
+import requests
+>>>>>>> 9565b06501594719a23ac951fea9023c18fbe2fe:src/mamadou/auth/routers/user_routes.py
 router = APIRouter(prefix="/users", tags=["Auth & User"])
 
 
 # GET all users
 @router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
-async def get_all_users(skip: int = 0, limit: int = 10):
+async def get_all_users(skip: int = 0, limit: int = 20):
     """
     Get all users with pagination
     """
@@ -160,4 +168,41 @@ async def reset_password(request: ResetPasswordRequest):
 
 
 
+@router.post("/google-login",status_code=status.HTTP_201_CREATED)
+async def google_login_token(access_token: str):
+
+    response = requests.get(
+        f'https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}'
+    )
+    if response.status_code != 200:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
+
+    user_info = response.json()
+    email = user_info["email"]
+    name = user_info.get("name", "")
+    picture = user_info.get("picture", "")
+
+    db_user = await UserModel.find_one(UserModel.email == email)
+    if db_user is None :
+        new_user = UserModel(
+            first_name=name.split(" ")[0] if name else "",
+            last_name=" ".join(name.split(" ")[1:]) if len(name.split(" ")) > 1 else "",
+            email=email,
+            phone_number="",
+            password=None,
+            is_verified=True,
+            profile_image=picture,
+            auth_provider="google",
+        )
+        await new_user.insert()
+        token = create_access_token(data={"sub": email, "role": new_user.role.value, "user_id": new_user.id})
+        return {"access_token": token, "token_type": "bearer"}
+
+
+    # 3️⃣ Generate JWT token
+    jwt_token = create_access_token(
+        data={"sub": db_user.email, "user_id": db_user.id, "role": db_user.role}
+    )
+
+    return {"access_token": jwt_token, "token_type": "bearer"}
 
