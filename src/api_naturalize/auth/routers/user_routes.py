@@ -216,7 +216,7 @@ async def google_login_token(access_token: str):
 
 
 @user_router.get("/me", response_model=ExtendedDashboardResponse)
-async def get_extended_dashboard_stats(user=Depends(get_user_info)):
+async def get_extended_dashboard_stats(user:dict=Depends(get_user_info)):
     """
     Get extended dashboard statistics for a specific user including:
     - total_score from leaderboard
