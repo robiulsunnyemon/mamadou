@@ -173,6 +173,10 @@ async def reset_password(request: ResetPasswordRequest):
 @router.post("/google-login",status_code=status.HTTP_201_CREATED)
 async def google_login_token(access_token: str):
 
+    if access_token is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="please give me token")
+
+
     response = requests.get(
         f'https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}'
     )
@@ -207,8 +211,6 @@ async def google_login_token(access_token: str):
     )
 
     return {"access_token": jwt_token, "token_type": "bearer"}
-
-
 
 
 
