@@ -216,7 +216,7 @@ async def google_login_token(access_token: str):
 
 
 @user_router.get("/me", response_model=ExtendedDashboardResponse)
-async def get_extended_dashboard_stats(user:dict=Depends(get_user_info)):
+async def get_extended_dashboard_stats(current_user:dict=Depends(get_user_info)):
     """
     Get extended dashboard statistics for a specific user including:
     - total_score from leaderboard
@@ -227,7 +227,8 @@ async def get_extended_dashboard_stats(user:dict=Depends(get_user_info)):
     """
 
     # Get user details
-    id=user["user_id"]
+    id=current_user["user_id"]
+    print(f"this is user_id{id}")
     user = await UserModel.get(id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
