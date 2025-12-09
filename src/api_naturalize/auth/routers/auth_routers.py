@@ -19,11 +19,11 @@ import requests
 
 from api_naturalize.utils.user_info import get_user_info
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
-user_router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/auth", tags=["Auth & User"])
+
 
 # GET all users
-@user_router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
+@router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
 async def get_all_users(skip: int = 0, limit: int = 20):
     """
     Get all users with pagination
@@ -33,7 +33,7 @@ async def get_all_users(skip: int = 0, limit: int = 20):
 
 
 # GET user by ID
-@user_router.get("/{user_id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
+@router.get("/{user_id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
 async def get_user(user_id: str):
     """
     Get user by ID
@@ -67,7 +67,7 @@ async def create_user(user: UserCreate):
 
 
 # PATCH update user
-@user_router.patch("/{user_id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
+@router.patch("/{user_id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
 async def update_user(user_id: str, user_data: UserUpdate):
     """
     Update user information
@@ -82,7 +82,7 @@ async def update_user(user_id: str, user_data: UserUpdate):
 
 
 # DELETE user
-@user_router.delete("/{user_id}",status_code=status.HTTP_200_OK)
+@router.delete("/{user_id}",status_code=status.HTTP_200_OK)
 async def delete_user(user_id: str):
     """
     Delete user by ID
@@ -212,11 +212,11 @@ async def google_login_token(access_token: str):
 
 
 
+user_router = APIRouter(prefix="/users", tags=["Users"])
 
 
 
-
-@user_router.get("/users/me", response_model=ExtendedDashboardResponse)
+@router.get("/users/me", response_model=ExtendedDashboardResponse)
 async def get_extended_dashboard_stats(user=Depends(get_user_info)):
     """
     Get extended dashboard statistics for a specific user including:

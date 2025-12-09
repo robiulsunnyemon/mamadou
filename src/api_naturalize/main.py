@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from api_naturalize.database.database import initialize_database, close_database
-from api_naturalize.auth.routers.user_routes import router as auth_router
+from api_naturalize.auth.routers.user_routes import router as auth_router,user_router
 from api_naturalize.frequent_question.routers.frequent_question_routes import router as frequent_question_router
 from api_naturalize.course.routers.course_routes import router as course_router
 from api_naturalize.lesson.routers.lesson_routes import router as lesson_router
@@ -40,6 +40,7 @@ async def health():
 
 
 app.include_router(auth_router,prefix="/api/v1")
+app.include_router(user_router,prefix="/api/v1")
 app.include_router(dashboard_router,prefix="/api/v1")
 app.include_router(frequent_question_router,prefix="/api/v1")
 app.include_router(course_router,prefix="/api/v1")
