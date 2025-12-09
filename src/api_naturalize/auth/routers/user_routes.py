@@ -202,7 +202,7 @@ async def google_login_token(access_token: str):
         )
         await new_user.insert()
         token = create_access_token(data={"sub": email,"user_id": new_user.id})
-        return {"access_token": token, "token_type": "bearer","user":new_user}
+        return {"access_token": token, "token_type": "bearer"}
 
 
     # 3️⃣ Generate JWT token
