@@ -127,10 +127,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not db_user.is_verified:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Your account is not verified with OTP")
 
-    token = create_access_token(data={"sub": db_user.email, "role": db_user.role.value, "user_id": db_user.id})
+
+    token = await create_access_token(user_id=str(db_user.id))
     return {"access_token": token, "token_type": "bearer"}
-
-
 
 
 @router.post("/resend_otp", status_code=status.HTTP_200_OK)
@@ -169,13 +168,10 @@ async def reset_password(request: ResetPasswordRequest):
     return {"message":"successfully reset password"}
 
 
-
-@router.post("/google-login",status_code=status.HTTP_201_CREATED)
+@router.post("/google-login", status_code=status.HTTP_201_CREATED)
 async def google_login_token(access_token: str):
-
     if access_token is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="please give me token")
-
 
     response = requests.get(
         f'https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}'
@@ -189,7 +185,7 @@ async def google_login_token(access_token: str):
     picture = user_info.get("picture", "")
 
     db_user = await UserModel.find_one(UserModel.email == email)
-    if db_user is None :
+    if db_user is None:
         new_user = UserModel(
             first_name=name.split(" ")[0] if name else "",
             last_name=" ".join(name.split(" ")[1:]) if len(name.split(" ")) > 1 else "",
@@ -201,19 +197,14 @@ async def google_login_token(access_token: str):
             auth_provider="google",
         )
         await new_user.insert()
-        token = create_access_token(data={"sub": email, "user_id": new_user.id})
+
+        # শুধু user_id পাঠান
+        token = await create_access_token(user_id=str(new_user.id))
         return {"access_token": token, "token_type": "bearer"}
 
-
-    # 3️⃣ Generate JWT token
-    jwt_token = create_access_token(
-        data={"sub": db_user.email, "user_id": db_user.id, "role": db_user.role}
-    )
-
+    # Existing user এর ক্ষেত্রে
+    jwt_token = await create_access_token(user_id=str(db_user.id))
     return {"access_token": jwt_token, "token_type": "bearer"}
-
-
-
 
 
 
