@@ -14,34 +14,10 @@ from api_naturalize.utils.email_config import SendOtpModel
 from api_naturalize.utils.get_hashed_password import get_hashed_password,verify_password
 from api_naturalize.utils.otp_generate import generate_otp
 from api_naturalize.utils.token_generation import create_access_token
-
 import requests
 
-from api_naturalize.utils.user_info import get_user_info
 
-router = APIRouter(prefix="/auth", tags=["Auth & User"])
-
-
-# GET all users
-@router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
-async def get_all_users(skip: int = 0, limit: int = 20):
-    """
-    Get all users with pagination
-    """
-    users = await UserModel.find_all().skip(skip).limit(limit).to_list()
-    return users
-
-
-# GET user by ID
-@router.get("/{user_id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
-async def get_user(user_id: str):
-    """
-    Get user by ID
-    """
-    user = await UserModel.get(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 # POST create new user
@@ -66,37 +42,6 @@ async def create_user(user: UserCreate):
     return new_user
 
 
-# PATCH update user
-@router.patch("/{user_id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
-async def update_user(user_id: str, user_data: UserUpdate):
-    """
-    Update user information
-    """
-    user = await UserModel.get(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    update_data = user_data.model_dump(exclude_unset=True)
-    await user.update({"$set": update_data})
-    return await UserModel.get(user_id)
-
-
-# DELETE user
-@router.delete("/{user_id}",status_code=status.HTTP_200_OK)
-async def delete_user(user_id: str):
-    """
-    Delete user by ID
-    """
-    user = await UserModel.get(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    await user.delete()
-    return {"message": "User deleted successfully"}
-
-
-
-
 @router.post("/otp_verify", status_code=status.HTTP_200_OK)
 async def verify_otp(user:VerifyOTP):
     db_user =await UserModel.find_one(UserModel.email == user.email)
@@ -108,7 +53,6 @@ async def verify_otp(user:VerifyOTP):
     db_user.is_verified=True
     await db_user.save()
     return {"message":"You have  verified","data":db_user}
-
 
 
 
@@ -132,7 +76,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 
-
 @router.post("/resend_otp", status_code=status.HTTP_200_OK)
 async def resend_otp(request: ResendOTPRequest):
     db_user = await UserModel.find_one(UserModel.email == request.email)
@@ -148,8 +91,6 @@ async def resend_otp(request: ResendOTPRequest):
         "data":db_user,
         "otp":db_user.otp
     }
-
-
 
 
 
@@ -172,6 +113,10 @@ async def reset_password(request: ResetPasswordRequest):
 
 @router.post("/google-login",status_code=status.HTTP_201_CREATED)
 async def google_login_token(access_token: str):
+
+    if access_token is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="please give me token")
+
 
     response = requests.get(
         f'https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}'
@@ -197,77 +142,10 @@ async def google_login_token(access_token: str):
             auth_provider="google",
         )
         await new_user.insert()
-        token = create_access_token(data={"sub": email, "role": new_user.role.value, "user_id": new_user.id})
+        token = create_access_token(data={"sub": email,"user_id": new_user.id})
         return {"access_token": token, "token_type": "bearer"}
 
 
     # 3️⃣ Generate JWT token
-    jwt_token = create_access_token(
-        data={"sub": db_user.email, "user_id": db_user.id, "role": db_user.role}
-    )
-
-    return {"access_token": jwt_token, "token_type": "bearer"}
-
-
-
-
-
-user_router = APIRouter(prefix="/users", tags=["Users"])
-
-
-
-@router.get("/users/me", response_model=ExtendedDashboardResponse)
-async def get_extended_dashboard_stats(user=Depends(get_user_info)):
-    """
-    Get extended dashboard statistics for a specific user including:
-    - total_score from leaderboard
-    - total_lessons
-    - success_rate
-    - user details
-    - in-progress lessons (progress > 0 and < 100)
-    """
-
-    # Get user details
-    id=user["user_id"]
-    user = await UserModel.get(id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Convert user model to UserResponse
-    user_response = UserResponse(
-        id=user.id,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        email=user.email,
-        phone_number=user.phone_number,
-        is_verified=user.is_verified,
-        profile_image=user.profile_image,
-        auth_provider=user.auth_provider,
-        created_at=user.created_at,
-        updated_at=user.updated_at,
-        role=user.role,
-        otp=user.otp,
-        account_status=user.account_status
-    )
-
-    # Get total_score from LeaderBoardModel
-    leaderboard_data = await LeaderBoardModel.find_one(LeaderBoardModel.user_id == id)
-    total_score = leaderboard_data.total_score if leaderboard_data else 0
-
-    # Get total lessons count
-    total_lessons = await LessonModel.find_all().count()
-
-    # Calculate success rate
-    total_questions = await QuestionModel.find_all().count()
-    success_rate = (total_questions * total_score) / 100 if total_questions > 0 else 0.0
-
-    # Get in-progress lessons (progress > 0 and < 100)
-    in_progress_lessons = await get_in_progress_lessons(id)
-
-    return ExtendedDashboardResponse(
-        total_score=total_score,
-        total_lessons=total_lessons,
-        success_rate=success_rate,
-        user_details=user_response,
-        in_progress_lessons=in_progress_lessons
-    )
+    token = create_access_token(data={"sub": db_user.email, "role": db_user.role.value, "user_id": db_user.id})
+    return {"access_token": token, "token_type": "bearer"}

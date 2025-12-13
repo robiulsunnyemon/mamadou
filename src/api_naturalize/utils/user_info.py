@@ -23,15 +23,14 @@ def get_user_info(token: str = Depends(oauth2_scheme)):
 
 
         email: str = payload.get("sub")
-        role: str = payload.get("role")
-        user_id: int = payload.get(
+        user_id: str = payload.get(
             "user_id")
 
-        if email is None or role is None or user_id is None:
+        if email is None or user_id is None:
             raise credentials_exception
 
     except JWTError:
 
         raise credentials_exception
 
-    return {"role": role, "email": email, "user_id": user_id}
+    return {"email": email, "user_id": user_id}

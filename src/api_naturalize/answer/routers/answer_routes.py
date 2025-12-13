@@ -40,7 +40,7 @@ async def get_answer(id: str):
 @router.post("/", response_model=AnswerResponse, status_code=status.HTTP_201_CREATED)
 async def create_answer(answer_data: AnswerCreate, user: dict = Depends(get_user_info)):
     user_id = user["user_id"]
-    db_user = await UserModel.get(user_id)  # await যোগ করুন
+    db_user = await UserModel.get(user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
