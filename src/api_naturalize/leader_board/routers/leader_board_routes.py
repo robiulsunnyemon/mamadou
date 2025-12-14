@@ -24,29 +24,36 @@ async def get_all_leader_boards(skip: int = 0, limit: int = 10):
 
 
 
-
-@router.get("/filter", response_model=List[Leaderboard_Response], status_code=status.HTTP_200_OK)
+@router.get("/filter", response_model=list[Leaderboard_Response])
 async def get_all_leader_boards(skip: int = 0, limit: int = 10):
 
-    leader_boards = await LeaderBoardModel.find_all().skip(skip).limit(limit).to_list()
+    leader_boards = (
+        await LeaderBoardModel
+        .find_all()
+        .sort(-LeaderBoardModel.total_score)
+        .skip(skip)
+        .limit(limit)
+        .to_list()
+    )
 
-    # সব user_id একসাথে collect
     user_ids = [lb.user_id for lb in leader_boards]
 
     users = await UserModel.find(
-        UserModel.id.in_(user_ids)
+        {"_id": {"$in": user_ids}}
     ).to_list()
 
-    user_map = {str(user.id): user for user in users}
+    user_map = {str(u.id): u for u in users}
 
     res = []
-    for lb in leader_boards:
+    for index, lb in enumerate(leader_boards, start=skip + 1):
         data = lb.model_dump()
-        user = user_map.get(str(lb.user_id))
+        user = user_map.get(lb.user_id)
         data["user"] = UserResponse.model_validate(user) if user else None
+        data["rank"] = index   # 🏆 serial / rank
         res.append(Leaderboard_Response(**data))
 
     return res
+
 
 
 

@@ -31,7 +31,7 @@ class LeaderboardResponse(BaseModel):
 class Leaderboard_Response(BaseModel):
     id: str
     user_id: str
-    user:Optional[UserResponse]
+    user: Optional[UserResponse] = None
     total_score: int
     created_at: datetime
     updated_at: datetime
