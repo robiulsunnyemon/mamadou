@@ -37,11 +37,12 @@ async def get_user(id: str):
 
 
 # PATCH update user
-@user_router.patch("/{id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
-async def update_user(id: str, user_data: UserUpdate):
+@user_router.patch("/update/info", response_model=UserResponse,status_code=status.HTTP_200_OK)
+async def update_user(user_data: UserUpdate,user:dict=Depends(get_user_info)):
     """
     Update user information
     """
+    id=user["user_id"]
     user = await UserModel.get(id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
