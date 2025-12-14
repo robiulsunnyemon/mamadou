@@ -32,6 +32,7 @@ class Leaderboard_Response(BaseModel):
     id: str
     user_id: str
     user: Optional[UserResponse] = None
+    rank: int
     total_score: int
     created_at: datetime
     updated_at: datetime
