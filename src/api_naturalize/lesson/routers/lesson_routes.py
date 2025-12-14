@@ -89,7 +89,7 @@ async def get_lesson(id: str, user: dict = Depends(get_user_info)):
         total_right_answers = sum(1 for answer in user_answers if answer.score == 1)
 
     # Convert lesson to dict and add nested data
-    lesson_dict = lesson.dict()
+    lesson_dict = lesson.model_dump()
     lesson_dict["questions"] = questions
     lesson_dict["my_progress"] = my_progress  # Only progress percentage
     lesson_dict["total_right_answers"] = total_right_answers

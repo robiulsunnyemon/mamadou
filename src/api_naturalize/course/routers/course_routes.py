@@ -1,9 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
+
+from fastapi.params import Depends
+
 from api_naturalize.course.models.course_model import CourseModel
 from api_naturalize.course.schemas.course_schemas import CourseCreate, CourseUpdate, CourseResponse
 from api_naturalize.lesson.models.lesson_model import LessonModel
+from api_naturalize.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from api_naturalize.question.models.question_model import QuestionModel
+from api_naturalize.utils.user_info import get_user_info
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -12,24 +17,38 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 # GET all courses with nested lessons and total questions
 @router.get("/", response_model=List[CourseResponse])
-async def get_all_courses(skip: int = 0, limit: int = 10):
+async def get_all_courses(skip: int = 0, limit: int = 10,user_data:dict=Depends(get_user_info)):
     """
     Get all courses with pagination, nested lessons and total questions count
     """
+    user_id=user_data["user_id"]
     courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
 
     course_responses = []
+
     for course in courses:
         # Fetch lessons for each course
         lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
+        course_dict = course.model_dump()
+        course_dict["lessons"] = lessons
+
+        for lesson in lessons:
+            db_progress_lesson=await ProgressLessonModel.find_one(ProgressLessonModel.id==lesson.id,ProgressLessonModel.user_id==user_id)
+            if db_progress_lesson is None:
+                course_dict["lessons"]["my_progress"]=0
+            else:
+                course_dict["lessons"]["my_progress"]=db_progress_lesson.progress
+
+
+
+
 
 
         # Calculate total questions for this course
         total_questions = await QuestionModel.find(QuestionModel.course_id == course.id).count()
 
         # Convert course to dict and add nested data
-        course_dict = course.model_dump()
-        course_dict["lessons"] = lessons
+
         course_dict["total_questions"] = total_questions
 
         course_responses.append(CourseResponse(**course_dict))
