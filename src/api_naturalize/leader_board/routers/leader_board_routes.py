@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException,status
 from typing import List
+
+from api_naturalize.auth.models.user_model import UserModel
+from api_naturalize.auth.schemas.user_schemas import UserResponse
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
-from api_naturalize.leader_board.schemas.leader_board_schemas import LeaderboardCreate, LeaderboardUpdate, LeaderboardResponse
+from api_naturalize.leader_board.schemas.leader_board_schemas import LeaderboardCreate, LeaderboardUpdate, \
+    LeaderboardResponse, Leaderboard_Response
 
 router = APIRouter(prefix="/leaderboards", tags=["leaderboards"])
 
@@ -14,6 +18,45 @@ async def get_all_leader_boards(skip: int = 0, limit: int = 10):
     """
     leader_boards = await LeaderBoardModel.find_all().skip(skip).limit(limit).to_list()
     return leader_boards
+
+
+
+
+
+
+
+@router.get("/filter", response_model=List[Leaderboard_Response], status_code=status.HTTP_200_OK)
+async def get_all_leader_boards(skip: int = 0, limit: int = 10):
+
+    leader_boards = await LeaderBoardModel.find_all().skip(skip).limit(limit).to_list()
+
+    # সব user_id একসাথে collect
+    user_ids = [lb.user_id for lb in leader_boards]
+
+    users = await UserModel.find(
+        UserModel.id.in_(user_ids)
+    ).to_list()
+
+    user_map = {str(user.id): user for user in users}
+
+    res = []
+    for lb in leader_boards:
+        data = lb.model_dump()
+        user = user_map.get(str(lb.user_id))
+        data["user"] = UserResponse.model_validate(user) if user else None
+        res.append(Leaderboard_Response(**data))
+
+    return res
+
+
+
+
+
+
+
+
+
+
 
 # GET leader_board by ID
 @router.get("/{id}", response_model=LeaderboardResponse,status_code=status.HTTP_200_OK)

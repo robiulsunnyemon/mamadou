@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+from api_naturalize.auth.schemas.user_schemas import UserResponse
+
+
 # Schema for creating new LeaderBoard
 class LeaderboardCreate(BaseModel):
     user_id: str
@@ -16,6 +19,19 @@ class LeaderboardUpdate(BaseModel):
 class LeaderboardResponse(BaseModel):
     id: str
     user_id: str
+    total_score: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Schema for LeaderBoard response
+class Leaderboard_Response(BaseModel):
+    id: str
+    user_id: str
+    user:Optional[UserResponse]
     total_score: int
     created_at: datetime
     updated_at: datetime
