@@ -91,7 +91,7 @@ async def get_in_progress_lessons(user_id: str) -> List[FilteredLessonResponse]:
     progress_records = await ProgressLessonModel.find(
         ProgressLessonModel.user_id == user_id,
         ProgressLessonModel.progress > 0,
-        ProgressLessonModel.progress < 100
+        ProgressLessonModel.progress < 101
     ).to_list()
 
     in_progress_lessons = []

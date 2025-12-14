@@ -10,8 +10,6 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 
-
-
 # GET all courses with nested lessons and total questions
 @router.get("/", response_model=List[CourseResponse])
 async def get_all_courses(skip: int = 0, limit: int = 10):
@@ -25,11 +23,12 @@ async def get_all_courses(skip: int = 0, limit: int = 10):
         # Fetch lessons for each course
         lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
 
+
         # Calculate total questions for this course
         total_questions = await QuestionModel.find(QuestionModel.course_id == course.id).count()
 
         # Convert course to dict and add nested data
-        course_dict = course.dict()
+        course_dict = course.model_dump()
         course_dict["lessons"] = lessons
         course_dict["total_questions"] = total_questions
 
@@ -57,7 +56,7 @@ async def get_course(id: str):
     total_questions = await QuestionModel.find(QuestionModel.course_id == id).count()
 
     # Convert course to dict and add nested data
-    course_dict = course.dict()
+    course_dict = course.model_dump()
     course_dict["lessons"] = lessons
     course_dict["total_questions"] = total_questions
 
