@@ -27,6 +27,7 @@ class CourseResponse(BaseModel):
     total_questions: int = 0  # New field for total questions in this course
     created_at: datetime
     updated_at: datetime
+    course_progress:Optional[float]
 
     class Config:
         from_attributes = True

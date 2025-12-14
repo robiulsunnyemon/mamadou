@@ -31,6 +31,7 @@ async def get_all_courses(
         ).to_list()
 
         lesson_list = []
+        total_lesson_progress=0
 
         for lesson in lessons:
             lesson_dict = lesson.model_dump()
@@ -44,6 +45,8 @@ async def get_all_courses(
                 db_progress_lesson.progress if db_progress_lesson else 0
             )
 
+            total_lesson_progress+=lesson_dict["my_progress"]
+
             lesson_list.append(lesson_dict)
 
         total_questions = await QuestionModel.find(
@@ -53,6 +56,7 @@ async def get_all_courses(
         course_dict = course.model_dump()
         course_dict["lessons"] = lesson_list
         course_dict["total_questions"] = total_questions
+        course_dict["course_progress"] = total_lesson_progress/len(lessons)
 
         course_responses.append(CourseResponse(**course_dict))
 
