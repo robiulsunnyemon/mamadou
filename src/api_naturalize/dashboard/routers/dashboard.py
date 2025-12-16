@@ -21,7 +21,7 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 
-@router.get("/course/all", response_model=List[CourseResponseAdmin],status_code=status.HTTP_200_OK)
+@router.get("/course/all",status_code=status.HTTP_200_OK)
 async def get_all_course(
     skip: int = 0,
     limit: int = 10
@@ -30,6 +30,19 @@ async def get_all_course(
     courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
 
     return courses
+
+
+@router.get("/lesson/all", status_code=status.HTTP_200_OK)
+async def get_all_lesson(
+    skip: int = 0,
+    limit: int = 10
+):
+
+    lessons = await LessonModel.find_all().skip(skip).limit(limit).to_list()
+
+    return lessons
+
+
 
 
 @router.get("/users/{id}", response_model=ExtendedDashboardResponse)
