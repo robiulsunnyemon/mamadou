@@ -103,7 +103,7 @@ async def get_lesson(id: str, user: dict = Depends(get_user_info)):
 
 
 # POST create new lesson
-@router.post("/", response_model=LessonResponse,status_code=status.HTTP_201_CREATED)
+@router.post("/",status_code=status.HTTP_201_CREATED)
 async def create_lesson(lesson_data: LessonCreate):
     """
     Check Course id is valid?
