@@ -31,13 +31,11 @@ origins = [
     "http://localhost",
     "http://localhost:8000",
     "http://localhost:5173",
-    "https://mamadou.mtscorporate.com",
-    "*"
+    "https://mamadou.mtscorporate.com"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
