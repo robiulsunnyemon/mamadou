@@ -92,6 +92,78 @@ async def create_course(
 
 
 
+
+# POST create new lesson
+@router.post("/create/lesson",status_code=status.HTTP_201_CREATED)
+async def create_lesson(
+        request: Request,
+        name: Annotated[str, Form()],
+        description: Annotated[str, Form()],
+        image_url: Annotated[UploadFile, File()],
+        course_id: Annotated[str, Form()],
+
+):
+    """
+    Check Course id is valid?
+    """
+
+    db_course=await  CourseModel.get(course_id)
+    if not db_course:
+        raise  HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Course is not found")
+
+
+    """
+    Create a new lesson
+    """
+
+
+    file_extension = Path(image_url.filename).suffix
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = Path(UPLOAD_DIR) / unique_filename
+
+
+    try:
+
+        with open(file_path, "wb") as buffer:
+
+            shutil.copyfileobj(image_url.file, buffer)
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {e}"
+        )
+
+
+    base_url = str(request.base_url).replace("http://", "https://")
+    image_url = f"{base_url}static/{unique_filename}"
+
+
+    lesson_data = {
+        "name": name,
+        "description": description,
+        "image_url": image_url,
+        "course_id":course_id
+    }
+
+
+
+
+    lesson = LessonModel(**lesson_data)
+    await lesson.create()
+    return lesson
+
+
+
+
+
+
+
+
+
+
+
+
 @router.get("/lesson/all",response_model=List[LessonResponseAdmin], status_code=status.HTTP_200_OK)
 async def get_all_lesson(
     skip: int = 0,
