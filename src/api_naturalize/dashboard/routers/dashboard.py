@@ -21,7 +21,7 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 
-@router.get("/fetch/admin", response_model=List[CourseResponseAdmin],status_code=status.HTTP_200_OK)
+@router.get("/course/all", response_model=List[CourseResponseAdmin],status_code=status.HTTP_200_OK)
 async def get_all_course(
     skip: int = 0,
     limit: int = 10
