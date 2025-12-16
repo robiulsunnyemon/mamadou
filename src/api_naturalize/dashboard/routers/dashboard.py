@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException,status
+from fastapi import APIRouter, HTTPException,status,File, UploadFile, Form
 from typing import List
 from api_naturalize.answer.models.answer_model import AnswerModel
 from api_naturalize.auth.models.user_model import UserModel
