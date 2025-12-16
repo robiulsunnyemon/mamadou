@@ -24,6 +24,20 @@ class LessonUpdate(BaseModel):
 
 
 
+# Schema for Lesson response
+
+class LessonResponseAdmin(BaseModel):
+    id: str
+    name: str
+    description: str
+    image_url: str
+    course_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
 
 # Schema for Lesson response
 
