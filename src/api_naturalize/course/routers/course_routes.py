@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+
+from fastapi import APIRouter, HTTPException,status
 from typing import List
 
 from fastapi.params import Depends
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 
-@router.get("/", response_model=List[CourseResponse])
+@router.get("/", response_model=List[CourseResponse],status_code=status.HTTP_200_OK)
 async def get_all_courses(
     skip: int = 0,
     limit: int = 10,
@@ -67,15 +68,7 @@ async def get_all_courses(
 
 
 
-@router.get("/fetch/admin", response_model=List[CourseResponseAdmin])
-async def get_all_course(
-    skip: int = 0,
-    limit: int = 10
-):
 
-    courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
-
-    return courses
 
 
 
@@ -83,7 +76,7 @@ async def get_all_course(
 
 
 # GET course by ID with nested lessons and total questions
-@router.get("/{id}", response_model=CourseResponse)
+@router.get("/{id}", response_model=CourseResponse,status_code=status.HTTP_200_OK)
 async def get_course(id: str):
     """
     Get course by ID with nested lessons and total questions count
@@ -117,7 +110,7 @@ async def get_course(id: str):
 
 
 # POST create new course
-@router.post("/", response_model=CourseResponse)
+@router.post("/", response_model=CourseResponse,status_code=status.HTTP_201_CREATED)
 async def create_course(course_data: CourseCreate):
     
     """
@@ -129,7 +122,7 @@ async def create_course(course_data: CourseCreate):
     return course
 
 # PATCH update course
-@router.patch("/{id}", response_model=CourseResponse)
+@router.patch("/{id}", response_model=CourseResponse,status_code=status.HTTP_200_OK)
 async def update_course(id: str, course_data: CourseUpdate):
     
     """
@@ -144,7 +137,7 @@ async def update_course(id: str, course_data: CourseUpdate):
     return await CourseModel.get(id)
 
 # DELETE course
-@router.delete("/{id}")
+@router.delete("/{id}",status_code=status.HTTP_200_OK)
 async def delete_course(id: str):
     
     """

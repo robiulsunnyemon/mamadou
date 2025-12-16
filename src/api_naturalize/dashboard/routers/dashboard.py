@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException,status
 from typing import List
 from api_naturalize.answer.models.answer_model import AnswerModel
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserResponse
 from api_naturalize.course.models.course_model import CourseModel
-from api_naturalize.course.schemas.course_schemas import CourseResponse
+from api_naturalize.course.schemas.course_schemas import CourseResponse, CourseResponseAdmin
 from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse, QuestionStatisticsResponse, \
     MostDifficultQuestionsResponse, UserStatsResponse, MonthlyRegistrationResponse, UserGrowthResponse, UserStatusFilter
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
@@ -21,7 +21,15 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 
+@router.get("/fetch/admin", response_model=List[CourseResponseAdmin],status_code=status.HTTP_200_OK)
+async def get_all_course(
+    skip: int = 0,
+    limit: int = 10
+):
 
+    courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
+
+    return courses
 
 
 @router.get("/users/{id}", response_model=ExtendedDashboardResponse)
