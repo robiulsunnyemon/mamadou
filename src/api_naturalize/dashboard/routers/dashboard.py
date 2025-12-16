@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException,status,File, UploadFile, Form
+from fastapi import APIRouter, HTTPException,status,File, UploadFile, Form,Request
 from typing import List
 from api_naturalize.answer.models.answer_model import AnswerModel
 from api_naturalize.auth.models.user_model import UserModel
@@ -44,6 +44,7 @@ async def get_all_course(
 @router.post("/create/course", status_code=status.HTTP_201_CREATED)
 async def create_course(
         # কোর্সের অন্যান্য ডেটা Form ডেটা হিসেবে নিন
+        request: Request,
         name: Annotated[str, Form()],
         description: Annotated[str, Form()],
         # ইমেজ ফাইল UploadFile হিসেবে নিন
@@ -80,7 +81,8 @@ async def create_course(
     # 3. ইমেজ URL তৈরি (যদি আপনি একটি স্থানীয় সার্ভার ব্যবহার করেন)
     # ধরে নিলাম আপনার অ্যাপটি 'http://localhost:8000' এ চলছে
     # এই URL-টি ডেটাবেসে সংরক্ষণ করা হবে।
-    image_url = f"/static/{unique_filename}"  # পরবর্তীতে static ফাইল সার্ভিং সেট করতে হবে
+    base_url = str(request.base_url).replace("http://", "https://")
+    image_url = f"{base_url}static/{unique_filename}"  # পরবর্তীতে static ফাইল সার্ভিং সেট করতে হবে
 
     # 4. কোর্সের ডেটা তৈরি ও ডেটাবেসে সংরক্ষণ
     course_data = {
