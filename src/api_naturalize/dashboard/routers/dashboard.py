@@ -14,10 +14,18 @@ from api_naturalize.progress_lesson.models.progress_lesson_model import Progress
 from api_naturalize.progress_lesson.schemas.progress_lesson_schemas import FilteredLessonResponse
 from api_naturalize.question.models.question_model import QuestionModel
 from datetime import datetime, timedelta,timezone
-
 from api_naturalize.utils.account_status import AccountStatus
 from api_naturalize.utils.user_role import UserRole
+from pathlib import Path
+from typing import Annotated
+import shutil
+import uuid
 
+
+
+# ইমেজ আপলোড ফোল্ডার তৈরি
+UPLOAD_DIR = "uploaded_images"
+Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True) # ফোল্ডার তৈরি করে
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
@@ -31,6 +39,66 @@ async def get_all_course(
     courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
 
     return courses
+
+
+@router.post("/create/course", status_code=status.HTTP_201_CREATED)
+async def create_course(
+        # কোর্সের অন্যান্য ডেটা Form ডেটা হিসেবে নিন
+        name: Annotated[str, Form()],
+        description: Annotated[str, Form()],
+        # ইমেজ ফাইল UploadFile হিসেবে নিন
+        course_image: Annotated[UploadFile, File()]
+):
+    """
+    Create a new course and upload its image
+    """
+
+    # --- A. ফাইল সংরক্ষণ ---
+    # 1. ফাইলের নাম তৈরি (ইউনিক নাম ব্যবহার করা ভালো)
+    # যেমন: 6734e567-c23f-4e01-b541-b66a5e182e05.jpg
+    file_extension = Path(course_image.filename).suffix
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = Path(UPLOAD_DIR) / unique_filename
+
+    # 2. ফাইলটি সংরক্ষণ করা
+    # aiofiles ব্যবহার করে অ্যাসিনক্রোনাসভাবে সেভ করতে পারেন
+    # অথবা এখানে সহজবোধ্যতার জন্য shutil ব্যবহার করা হয়েছে
+    try:
+        # ফাইলটি অস্থায়ীভাবে ডিস্কে সেভ করুন
+        with open(file_path, "wb") as buffer:
+            # course_image.file হলো Python এর file-like object
+            shutil.copyfileobj(course_image.file, buffer)
+    except Exception as e:
+        # ফাইল সেভ করার সময় কোনো সমস্যা হলে ত্রুটি দিন
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {e}"
+        )
+
+    # --- B. লাইভ URL তৈরি ও ডেটাবেসে সংরক্ষণ ---
+
+    # 3. ইমেজ URL তৈরি (যদি আপনি একটি স্থানীয় সার্ভার ব্যবহার করেন)
+    # ধরে নিলাম আপনার অ্যাপটি 'http://localhost:8000' এ চলছে
+    # এই URL-টি ডেটাবেসে সংরক্ষণ করা হবে।
+    image_url = f"/static/{unique_filename}"  # পরবর্তীতে static ফাইল সার্ভিং সেট করতে হবে
+
+    # 4. কোর্সের ডেটা তৈরি ও ডেটাবেসে সংরক্ষণ
+    course_data = {
+        "name": name,
+        "description": description,
+        "image_url": image_url  # নতুন ইমেজ URL যোগ করা হলো
+        # CourseModel-এ image_url ফিল্ড যোগ করতে হবে
+    }
+
+    # আপনার আসল ডেটাবেস অপারেশন
+    # course = CourseModel(**course_data)
+    # await course.create()
+
+    # Response-এর জন্য
+    return {"message": "Course created successfully", "course_data": course_data}
+
+
+
 
 
 @router.get("/lesson/all",response_model=List[LessonResponseAdmin], status_code=status.HTTP_200_OK)

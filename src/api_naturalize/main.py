@@ -12,6 +12,9 @@ from api_naturalize.answer.routers.answer_routes import router as answer_router
 from api_naturalize.progress_lesson.routers.progress_lesson_routes import router as progress_lesson_router
 from api_naturalize.leader_board.routers.leader_board_routes import router as leaderboard_router
 from api_naturalize.dashboard.routers.dashboard import router as dashboard_router
+from fastapi.staticfiles import StaticFiles
+
+
 
 @asynccontextmanager
 async def lifespan_context(_: FastAPI):
@@ -26,6 +29,8 @@ app = FastAPI(
     lifespan=lifespan_context,
 )
 
+
+app.mount("/static", StaticFiles(directory="uploaded_images"), name="static")
 
 
 # CORS
