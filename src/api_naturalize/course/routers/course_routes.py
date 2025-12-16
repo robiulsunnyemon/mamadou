@@ -110,7 +110,7 @@ async def get_course(id: str):
 
 
 # POST create new course
-@router.post("/", response_model=CourseResponse,status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_course(course_data: CourseCreate):
     
     """
