@@ -27,19 +27,36 @@ app = FastAPI(
 )
 
 # CORS
+# origins = [
+#     "http://localhost",
+#     "http://localhost:8000",
+#     "http://localhost:5173",
+#     "https://mamadou.mtscorporate.com"
+# ]
+#
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+
+# CORS
 origins = [
-    "http://localhost",
-    "http://localhost:8000",
     "http://localhost:5173",
-    "https://mamadou.mtscorporate.com"
+    "http://localhost:8000",
+    "https://mamadou.mtscorporate.com",
 ]
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/", tags=["health"])
 async def health():
