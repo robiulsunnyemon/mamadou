@@ -17,6 +17,24 @@ class CourseUpdate(BaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
 
+
+
+
+
+# Schema for Course response
+class CourseResponseAdmin(BaseModel):
+    id: str
+    name: str
+    description: str
+    image_url: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+
 # Schema for Course response
 class CourseResponse(BaseModel):
     id: str

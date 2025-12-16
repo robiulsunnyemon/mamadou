@@ -4,7 +4,7 @@ from typing import List
 from fastapi.params import Depends
 
 from api_naturalize.course.models.course_model import CourseModel
-from api_naturalize.course.schemas.course_schemas import CourseCreate, CourseUpdate, CourseResponse
+from api_naturalize.course.schemas.course_schemas import CourseCreate, CourseUpdate, CourseResponse, CourseResponseAdmin
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from api_naturalize.question.models.question_model import QuestionModel
@@ -61,6 +61,23 @@ async def get_all_courses(
         course_responses.append(CourseResponse(**course_dict))
 
     return course_responses
+
+
+
+
+
+
+@router.get("/fetch/admin", response_model=List[CourseResponseAdmin])
+async def get_all_course(
+    skip: int = 0,
+    limit: int = 10
+):
+
+    courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
+
+    return courses
+
+
 
 
 
