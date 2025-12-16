@@ -26,6 +26,14 @@ app = FastAPI(
     lifespan=lifespan_context,
 )
 
+# CORS
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "https://mamadou.mtscorporate.com",
+    "*"
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
