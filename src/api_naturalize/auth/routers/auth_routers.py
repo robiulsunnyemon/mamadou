@@ -16,6 +16,7 @@ from api_naturalize.utils.otp_generate import generate_otp
 from api_naturalize.utils.token_generation import create_access_token
 import requests
 
+from api_naturalize.utils.user_role import UserRole
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -40,6 +41,32 @@ async def create_user(user: UserCreate):
     send_otp_data = SendOtpModel(email=new_user.email, otp=new_user.otp)
     ##await send_otp(send_otp_data)
     return new_user
+
+
+
+
+# POST create new user
+@router.post("/signup/admin" ,response_model=UserResponse,status_code=status.HTTP_201_CREATED)
+async def create_admin(user: UserCreate):
+    hashed_password = get_hashed_password(user.password)
+    db_user = await UserModel.find_one(UserModel.email == user.email)
+    if db_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+    otp = generate_otp()
+    new_user = UserModel(
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        phone_number=user.phone_number,
+        password=hashed_password,
+        otp=otp,
+        role=UserRole.ADMIN
+    )
+    await new_user.insert()
+    send_otp_data = SendOtpModel(email=new_user.email, otp=new_user.otp)
+    ##await send_otp(send_otp_data)
+    return new_user
+
 
 
 @router.post("/otp_verify", status_code=status.HTTP_200_OK)
