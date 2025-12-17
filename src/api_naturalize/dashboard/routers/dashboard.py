@@ -995,21 +995,29 @@ async def get_user_demographics():
 
 
 ### dashboar
+@router.get("/filter/course", status_code=status.HTTP_200_OK)
+async def all_course(skip: int = 0, limit: int = 10):
+    # নিশ্চিত হয়ে নিন skip এবং limit যেন integer হয়
+    safe_skip = int(skip)
+    safe_limit = int(limit)
 
-@router.get("/filter/course",status_code=status.HTTP_200_OK)
-async def all_course(  skip: int = 0,limit: int = 10):
-    courses = await CourseModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
-    res=[]
+    # কোর্সের লিস্ট নিয়ে আসা
+    courses = await CourseModel.find_all().sort("-created_at").skip(safe_skip).limit(safe_limit).to_list()
+
+    res = []
     for course in courses:
-        res_dic={}
-        db_lessons=await LessonModel.find_all(LessonModel.course_id==course.id).to_list()
-        db_question=await QuestionModel.find_all(QuestionModel.course_id==course.id).to_list()
-        res_dic["course"]=course
-        res_dic["lessons"]=db_lessons
-        res_dic["questions"]=db_question
-        res_dic["total_question"]=len(db_question)
-        res_dic["total_lesson"]=len(db_lessons)
-        res_dic["status"]="published"
+        # course.id স্ট্রিং হলে অনেক সময় Beanie-তে সমস্যা হয়, তাই সরাসরি অবজেক্ট ব্যবহার করুন
+        db_lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
+        db_question = await QuestionModel.find(QuestionModel.course_id == course.id).to_list()
+
+        res_dic = {
+            "course": course,
+            "lessons": db_lessons,
+            "questions": db_question,
+            "total_question": len(db_question),
+            "total_lesson": len(db_lessons),
+            "status": "published"
+        }
         res.append(res_dic)
 
     return res
