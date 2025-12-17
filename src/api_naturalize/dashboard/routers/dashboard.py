@@ -990,3 +990,26 @@ async def get_user_demographics():
             "older_than_30_days": old_users
         }
     }
+
+
+
+
+### dashboar
+
+@router.get("/filter/course",status_code=status.HTTP_200_OK)
+async def all_course(  skip: int = 0,limit: int = 10):
+    courses = await CourseModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
+    res=[]
+    for course in courses:
+        res_dic={}
+        db_lessons=await LessonModel.find_all(LessonModel.course_id==course.id).to_list()
+        db_question=await QuestionModel.find_all(QuestionModel.course_id==course.id).to_list()
+        res_dic["course"]=course
+        res_dic["lessons"]=db_lessons
+        res_dic["questions"]=db_question
+        res_dic["total_question"]=len(db_question)
+        res_dic["total_lesson"]=len(db_lessons)
+        res_dic["status"]="published"
+        res.append(res_dic)
+
+    return res
