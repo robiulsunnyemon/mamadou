@@ -3,7 +3,7 @@ from typing import List
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserUpdate, UserResponse
 from api_naturalize.dashboard.routers.dashboard import get_in_progress_lessons
-from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse
+from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse, ExtendedAppUserResponse
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.question.models.question_model import QuestionModel
@@ -67,7 +67,7 @@ async def delete_user(id: str):
 
 
 
-@user_router.get("/info/me", response_model=ExtendedDashboardResponse)
+@user_router.get("/info/me", response_model=ExtendedAppUserResponse,status_code=status.HTTP_200_OK)
 async def get_extended_dashboard_stats(user: dict = Depends(get_user_info)):
     user_id = user["user_id"]
     db_user = await UserModel.get(user_id)
@@ -106,7 +106,7 @@ async def get_extended_dashboard_stats(user: dict = Depends(get_user_info)):
     # Get in-progress lessons (progress > 0 and < 100)
     in_progress_lessons = await get_in_progress_lessons(user_id)
 
-    return ExtendedDashboardResponse(
+    return ExtendedAppUserResponse(
         total_score=total_score,
         total_lessons=total_lessons,
         success_rate=success_rate,
