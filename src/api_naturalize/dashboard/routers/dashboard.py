@@ -1008,9 +1008,9 @@ async def all_course(skip: int = 0, limit: int = 10):
         db_question = await QuestionModel.find(QuestionModel.course_id == course.id).to_list()
 
         res_dic = {
-            "course": course,
-            "lessons": db_lessons,
-            "questions": db_question,
+            "course": jsonable_encoder(course),
+            "lessons": jsonable_encoder(db_lessons),
+            "questions": jsonable_encoder(db_question),
             "total_question": len(db_question),
             "total_lesson": len(db_lessons),
             "status": "published"
