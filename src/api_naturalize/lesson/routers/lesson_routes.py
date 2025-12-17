@@ -123,7 +123,7 @@ async def create_lesson(lesson_data: LessonCreate):
     return lesson
 
 # PATCH update lesson
-@router.patch("/{id}", response_model=LessonResponse,status_code=status.HTTP_200_OK)
+@router.patch("/{id}",status_code=status.HTTP_200_OK)
 async def update_lesson(id: str, lesson_data: LessonUpdate):
     
     """

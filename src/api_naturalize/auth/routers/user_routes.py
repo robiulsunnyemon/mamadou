@@ -36,7 +36,7 @@ async def get_user(id: str):
 
 
 # PATCH update user
-@user_router.patch("/update/info", response_model=UserResponse,status_code=status.HTTP_200_OK)
+@user_router.patch("/update/info",status_code=status.HTTP_200_OK)
 async def update_user(user_data: UserUpdate,user:dict=Depends(get_user_info)):
     """
     Update user information
@@ -47,8 +47,8 @@ async def update_user(user_data: UserUpdate,user:dict=Depends(get_user_info)):
         raise HTTPException(status_code=404, detail="User not found")
 
     update_data = user_data.model_dump(exclude_unset=True)
-    await user.update({"$set": update_data})
-    return await UserModel.get(id)
+    update_d=await user.update({"$set": update_data})
+    return await update_d
 
 
 # DELETE user

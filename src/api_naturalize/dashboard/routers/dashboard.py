@@ -227,7 +227,7 @@ async def get_all_lesson(
 
 
 # GET lesson by Course ID - simplified
-@router.get("/lesson/by_course_id/{id}", status_code=status.HTTP_200_OK)
+@router.get("/lesson/by_course_id/{id}",response_model=List[LessonCreate], status_code=status.HTTP_200_OK)
 async def get_lesson(id: str):
     """
     Get lesson by ID
