@@ -15,6 +15,14 @@ class ExtendedDashboardResponse(BaseModel):
     in_progress_lessons: List[FilteredLessonResponse]
 
 
+# Extended Dashboard Response Schema
+class ExtendedAppUserResponse(BaseModel):
+    total_score: int  # From LeaderBoard
+    total_lessons: int
+    success_rate: float
+    user_details: UserResponse
+    in_progress_lessons: List[FilteredLessonResponse]
+
 
 # Schema for question statistics
 class QuestionStatisticsResponse(BaseModel):
