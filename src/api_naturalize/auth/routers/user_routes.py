@@ -8,10 +8,18 @@ from api_naturalize.leader_board.models.leader_board_model import LeaderBoardMod
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.question.models.question_model import QuestionModel
 from api_naturalize.utils.user_info import get_user_info
-import aiofiles
-import os
+import shutil
+from pathlib import Path
 import uuid
 from pydantic import EmailStr
+
+
+
+
+
+
+UPLOAD_DIR = "profile_images"
+Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -93,25 +101,28 @@ async def update_user(
 
 
     if profile_image:
-        upload_dir = "static/profile_images"
-        os.makedirs(upload_dir, exist_ok=True)
 
-        extension = os.path.splitext(profile_image.filename)[1]
-        unique_filename = f"{uuid.uuid4()}{extension}"
-        file_path = os.path.join(upload_dir, unique_filename)
-
-        base_url = str(request.base_url).rstrip('/')
-        if "localhost" not in base_url:
-            base_url = base_url.replace("http://", "https://")
+        file_extension = Path(profile_image.filename).suffix
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = Path(UPLOAD_DIR) / unique_filename
 
         try:
-            async with aiofiles.open(file_path, 'wb') as out_file:
-                content = await profile_image.read()
-                await out_file.write(content)
 
-            update_data["profile_image"] = f"{base_url}/{file_path}"
+            with open(file_path, "wb") as buffer:
+
+                shutil.copyfileobj(profile_image.file, buffer)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Could not save image: {str(e)}")
+
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Image upload failed: {e}"
+            )
+
+        base_url = str(request.base_url).replace("http://", "https://")
+        image_url = f"{base_url}static/{unique_filename}"
+        update_data["profile_image"] = f"{image_url}"
+
+
 
     if not update_data:
         raise HTTPException(status_code=400, detail="No data provided for update")
