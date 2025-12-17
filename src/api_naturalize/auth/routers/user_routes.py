@@ -11,12 +11,13 @@ from api_naturalize.utils.user_info import get_user_info
 import aiofiles
 import os
 import uuid
+from pydantic import EmailStr
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
 
 # GET all users
-@user_router.get("/",status_code=status.HTTP_200_OK)
+@user_router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
 async def get_all_users(skip: int = 0, limit: int = 20):
     """
     Get all users with pagination
@@ -66,7 +67,7 @@ async def update_user(
         request: Request,
         first_name: str = Form(None),
         last_name: str = Form(None),
-        email: str = Form(None),
+        email: EmailStr = Form(None),
         phone_number: str = Form(None),
         profile_image: UploadFile = File(None),
         user_info: dict = Depends(get_user_info)
