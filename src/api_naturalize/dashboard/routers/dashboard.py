@@ -23,9 +23,8 @@ import uuid
 
 
 
-# ইমেজ আপলোড ফোল্ডার তৈরি
 UPLOAD_DIR = "uploaded_images"
-Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True) # ফোল্ডার তৈরি করে
+Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
@@ -92,6 +91,24 @@ async def create_course(
 
 
 
+@router.get("/user/all",status_code=status.HTTP_200_OK)
+async def get_all_user(
+        skip: int = 0,
+        limit: int = 10
+):
+    db_users=await UserModel.find_all().skip(skip).limit(limit).to_list()
+
+
+
+
+
+
+
+
+
+
+
+
 
 # POST create new lesson
 @router.post("/create/lesson",status_code=status.HTTP_201_CREATED)
@@ -152,6 +169,9 @@ async def create_lesson(
     lesson = LessonModel(**lesson_data)
     await lesson.create()
     return lesson
+
+
+
 
 
 

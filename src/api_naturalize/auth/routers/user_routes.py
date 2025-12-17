@@ -7,12 +7,11 @@ from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.question.models.question_model import QuestionModel
-
-
-
 from api_naturalize.utils.user_info import get_user_info
 
+
 user_router = APIRouter(prefix="/users", tags=["Users"])
+
 
 # GET all users
 @user_router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)

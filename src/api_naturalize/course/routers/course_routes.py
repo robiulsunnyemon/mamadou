@@ -50,6 +50,19 @@ async def get_all_courses(
 
             lesson_list.append(lesson_dict)
 
+    #     total_questions = await QuestionModel.find(
+    #         QuestionModel.course_id == course.id
+    #     ).count()
+    #
+    #     course_dict = course.model_dump()
+    #     course_dict["lessons"] = lesson_list
+    #     course_dict["total_questions"] = total_questions
+    #     course_dict["course_progress"] = total_lesson_progress/len(lessons)
+    #
+    #     course_responses.append(CourseResponse(**course_dict))
+    #
+    # return course_responses
+
         total_questions = await QuestionModel.find(
             QuestionModel.course_id == course.id
         ).count()
@@ -57,9 +70,15 @@ async def get_all_courses(
         course_dict = course.model_dump()
         course_dict["lessons"] = lesson_list
         course_dict["total_questions"] = total_questions
-        course_dict["course_progress"] = total_lesson_progress/len(lessons)
+
+
+        if lessons:
+            course_dict["course_progress"] = total_lesson_progress / len(lessons)
+        else:
+            course_dict["course_progress"] = 0
 
         course_responses.append(CourseResponse(**course_dict))
+
 
     return course_responses
 
