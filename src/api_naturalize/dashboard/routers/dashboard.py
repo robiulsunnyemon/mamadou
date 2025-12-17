@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Annotated
 import shutil
 import uuid
-
+from fastapi.encoders import jsonable_encoder
 
 
 UPLOAD_DIR = "uploaded_images"
@@ -997,16 +997,13 @@ async def get_user_demographics():
 ### dashboar
 @router.get("/filter/course", status_code=status.HTTP_200_OK)
 async def all_course(skip: int = 0, limit: int = 10):
-    # নিশ্চিত হয়ে নিন skip এবং limit যেন integer হয়
     safe_skip = int(skip)
     safe_limit = int(limit)
 
-    # কোর্সের লিস্ট নিয়ে আসা
     courses = await CourseModel.find_all().sort("-created_at").skip(safe_skip).limit(safe_limit).to_list()
 
     res = []
     for course in courses:
-        # course.id স্ট্রিং হলে অনেক সময় Beanie-তে সমস্যা হয়, তাই সরাসরি অবজেক্ট ব্যবহার করুন
         db_lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
         db_question = await QuestionModel.find(QuestionModel.course_id == course.id).to_list()
 
@@ -1020,4 +1017,5 @@ async def all_course(skip: int = 0, limit: int = 10):
         }
         res.append(res_dic)
 
-    return res
+
+    return jsonable_encoder(res)
