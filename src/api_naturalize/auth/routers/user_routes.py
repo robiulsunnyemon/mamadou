@@ -19,7 +19,7 @@ import uuid
 
 
 
-UPLOAD_DIR = "profile_images"
+UPLOAD_DIR = "uploaded_images"
 Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
