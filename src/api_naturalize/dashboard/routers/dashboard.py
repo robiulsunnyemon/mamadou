@@ -9,7 +9,7 @@ from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse
     MostDifficultQuestionsResponse, UserStatsResponse, MonthlyRegistrationResponse, UserGrowthResponse, UserStatusFilter
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
-from api_naturalize.lesson.schemas.lesson_schemas import LessonResponseAdmin
+from api_naturalize.lesson.schemas.lesson_schemas import LessonResponseAdmin, LessonCreate
 from api_naturalize.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from api_naturalize.progress_lesson.schemas.progress_lesson_schemas import FilteredLessonResponse
 from api_naturalize.question.models.question_model import QuestionModel
@@ -225,6 +225,35 @@ async def get_all_lesson(
 
 
 
+
+# GET lesson by Course ID - simplified
+@router.get("/lesson/by_course_id/{id}", response_model=list[LessonCreate], status_code=status.HTTP_200_OK)
+async def get_lesson(id: str):
+    """
+    Get lesson by ID
+    """
+    lessons = await LessonModel.find_all(LessonModel.course_id==id).to_list()
+
+    return lessons
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @router.get("/users/{id}", response_model=ExtendedDashboardResponse)
 async def get_extended_dashboard_stats(
         id: str,
@@ -275,12 +304,16 @@ async def get_extended_dashboard_stats(
     # Get in-progress lessons (progress > 0 and < 100)
     in_progress_lessons = await get_in_progress_lessons(id)
 
+    completed_lesson=await ProgressLessonModel.find_all((ProgressLessonModel.user_id==id),(ProgressLessonModel.progress==100)).count()
+
     return ExtendedDashboardResponse(
         total_score=total_score,
         total_lessons=total_lessons,
         success_rate=success_rate,
         user_details=user_response,
-        in_progress_lessons=in_progress_lessons
+        in_progress_lessons=in_progress_lessons,
+        average_score=success_rate,
+        completed_lesson=completed_lesson
     )
 
 # Helper function to get in-progress lessons

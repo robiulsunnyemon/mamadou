@@ -9,6 +9,8 @@ class ExtendedDashboardResponse(BaseModel):
     total_score: int  # From LeaderBoard
     total_lessons: int
     success_rate: float
+    average_score: float
+    completed_lesson:int
     user_details: UserResponse
     in_progress_lessons: List[FilteredLessonResponse]
 
