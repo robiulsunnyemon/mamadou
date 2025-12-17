@@ -19,7 +19,7 @@ async def get_all_users(skip: int = 0, limit: int = 20):
     """
     Get all users with pagination
     """
-    users = await UserModel.find_all().skip(skip).limit(limit).to_list()
+    users = await UserModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
     return users
 
 
