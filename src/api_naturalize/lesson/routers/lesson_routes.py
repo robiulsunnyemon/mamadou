@@ -26,7 +26,7 @@ async def get_all_lessons_public(
     """
     Get all lessons with pagination and questions (without user progress)
     """
-    lessons = await LessonModel.find_all().skip(skip).limit(limit).to_list()
+    lessons = await LessonModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
 
     lesson_responses = []
     for lesson in lessons:

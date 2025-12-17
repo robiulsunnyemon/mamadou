@@ -35,7 +35,7 @@ async def get_all_course(
     limit: int = 10
 ):
 
-    courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
+    courses = await CourseModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
 
     return courses
 
@@ -218,7 +218,7 @@ async def get_all_lesson(
     limit: int = 10
 ):
 
-    lessons = await LessonModel.find_all().skip(skip).limit(limit).to_list()
+    lessons = await LessonModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
 
     return lessons
 

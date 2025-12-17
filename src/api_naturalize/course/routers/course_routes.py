@@ -23,7 +23,7 @@ async def get_all_courses(
 ):
     user_id = user_data["user_id"]
 
-    courses = await CourseModel.find_all().skip(skip).limit(limit).to_list()
+    courses = await CourseModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
     course_responses = []
 
     for course in courses:
