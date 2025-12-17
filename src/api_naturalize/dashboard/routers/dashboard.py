@@ -88,15 +88,43 @@ async def create_course(
     return {"message": "Course created successfully", "course_data": course_data}
 
 
-
-
-
-@router.get("/user/all",status_code=status.HTTP_200_OK)
+@router.get("/user/all", status_code=status.HTTP_200_OK)
 async def get_all_user(
         skip: int = 0,
         limit: int = 10
 ):
-    db_users=await UserModel.find_all().skip(skip).limit(limit).to_list()
+    db_users = await UserModel.find_all().skip(skip).limit(limit).to_list()
+    res = []
+
+    for db_user in db_users:
+
+        total_ans = await AnswerModel.find(
+            AnswerModel.user_id == db_user.id
+        ).count()
+
+        total_r8_ans = await AnswerModel.find(
+            (AnswerModel.user_id == db_user.id),
+            (AnswerModel.score == 1)
+        ).count()
+
+
+        success_rate = 0
+        if total_ans > 0:
+            success_rate = (total_r8_ans / total_ans) * 100
+
+        user_res = UserResponse(**db_user.model_dump())
+
+        res.append({
+            "user": user_res,
+            "score": total_r8_ans,
+            "success_rate": round(success_rate, 2),
+            "subscription":"basic"
+        })
+
+    return res
+
+
+
 
 
 
