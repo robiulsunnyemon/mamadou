@@ -995,23 +995,24 @@ async def get_user_demographics():
 
 
 ### dashboar
+
+
 @router.get("/filter/course", status_code=status.HTTP_200_OK)
 async def all_course(skip: int = 0, limit: int = 10):
-    # ১. টাইপ সেফটি (TypeError: skip must be an instance of int সমাধান)
+
     safe_skip = int(skip)
     safe_limit = int(limit)
 
-    # ২. কোর্স লিস্ট নিয়ে আসা
+
     courses = await CourseModel.find_all().sort("-created_at").skip(safe_skip).limit(safe_limit).to_list()
 
     res = []
     for course in courses:
-        # ৩. রিলেটেড ডাটা আনা (Beanie find ব্যবহার করে)
+
         db_lessons = await LessonModel.find(LessonModel.course_id == course.id).to_list()
         db_question = await QuestionModel.find(QuestionModel.course_id == course.id).to_list()
 
-        # ৪. রেসপন্স ডাটা সাজানো এবং _id হ্যান্ডেল করা
-        # course.id সরাসরি কল করলে Beanie সেটি স্ট্রিং হিসেবে দেয়
+
         res_dic = {
             "course": course,
             "lessons": db_lessons,
@@ -1022,15 +1023,55 @@ async def all_course(skip: int = 0, limit: int = 10):
         }
         res.append(res_dic)
 
-    # ৫. jsonable_encoder ব্যবহার করে সিরিয়ালাইজ করা
+
     encoded_res = jsonable_encoder(res)
 
-    # ৬. রেসপন্স থেকে সব _id সরিয়ে id তে কনভার্ট করার লজিক (গ্লোবাল সলিউশন)
+
     def clean_ids(obj):
         if isinstance(obj, list):
             return [clean_ids(i) for i in obj]
         if isinstance(obj, dict):
-            # _id থাকলে সেটাকে id বানিয়ে দিচ্ছি এবং পুরাতন _id ডিলিট করছি
+
+            if "_id" in obj:
+                obj["id"] = str(obj["_id"])
+                del obj["_id"]
+            return {k: clean_ids(v) for k, v in obj.items()}
+        return obj
+
+    return clean_ids(encoded_res)
+
+
+
+
+
+@router.get("/filter/lesson", status_code=status.HTTP_200_OK)
+async def all_lessons(skip: int = 0, limit: int = 10):
+    safe_skip = int(skip)
+    safe_limit = int(limit)
+
+    lessons = await LessonModel.find_all().sort("-created_at").skip(safe_skip).limit(safe_limit).to_list()
+
+    res = []
+    for lesson in lessons:
+        db_course = await QuestionModel.get(lesson.course_id)
+        db_question = await QuestionModel.find(QuestionModel.lesson_id == lesson.id).to_list()
+
+        res_dic = {
+            "course": db_course,
+            "lesson": lesson,
+            "questions": db_question,
+            "total_question": len(db_question),
+            "status": "published"
+        }
+        res.append(res_dic)
+
+    encoded_res = jsonable_encoder(res)
+
+    def clean_ids(obj):
+        if isinstance(obj, list):
+            return [clean_ids(i) for i in obj]
+        if isinstance(obj, dict):
+
             if "_id" in obj:
                 obj["id"] = str(obj["_id"])
                 del obj["_id"]
