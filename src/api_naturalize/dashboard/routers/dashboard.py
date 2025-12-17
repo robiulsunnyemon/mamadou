@@ -93,7 +93,7 @@ async def get_all_user(
         skip: int = 0,
         limit: int = 10
 ):
-    db_users = await UserModel.find_all().skip(skip).limit(limit).to_list()
+    db_users = await UserModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
     res = []
 
     for db_user in db_users:
