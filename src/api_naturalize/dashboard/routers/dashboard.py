@@ -310,7 +310,10 @@ async def get_extended_dashboard_stats(
     # Get in-progress lessons (progress > 0 and < 100)
     in_progress_lessons = await get_in_progress_lessons(id)
 
-    completed_lesson=await ProgressLessonModel.find_all((ProgressLessonModel.user_id==id),(ProgressLessonModel.progress==100)).count()
+    completed_lesson = await ProgressLessonModel.find(
+        ProgressLessonModel.user_id == id,
+        ProgressLessonModel.progress == 100
+    ).count()
 
     return ExtendedDashboardResponse(
         total_score=total_score,
@@ -331,7 +334,7 @@ async def get_in_progress_lessons(user_id: str) -> List[FilteredLessonResponse]:
     progress_records = await ProgressLessonModel.find(
         ProgressLessonModel.user_id == user_id,
         ProgressLessonModel.progress > 0,
-        ProgressLessonModel.progress < 101
+        ProgressLessonModel.progress < 100
     ).to_list()
 
     in_progress_lessons = []
