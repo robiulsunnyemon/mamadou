@@ -1053,7 +1053,7 @@ async def all_lessons(skip: int = 0, limit: int = 10):
 
     res = []
     for lesson in lessons:
-        db_course = await QuestionModel.get(lesson.course_id)
+        db_course = await CourseModel.get(lesson.course_id)
         db_question = await QuestionModel.find(QuestionModel.lesson_id == lesson.id).to_list()
 
         res_dic = {
