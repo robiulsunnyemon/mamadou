@@ -238,7 +238,7 @@ async def get_lesson(id: str):
         raise HTTPException(status_code=404, detail="Course not found")
 
 
-    lessons = await LessonModel.find_all(LessonModel.course_id==id).to_list()
+    lessons = await LessonModel.find(LessonModel.course_id==id).to_list()
 
     return lessons
 
