@@ -16,12 +16,11 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[EmailStr]
-    phone_number: Optional[str]
-    profile_image: Optional[str]
-
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+    profile_image: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: str
