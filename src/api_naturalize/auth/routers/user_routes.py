@@ -61,11 +61,6 @@ async def get_user(id: str):
 #
 
 
-
-
-
-
-
 @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
 async def update_user(
         request: Request,
@@ -76,8 +71,6 @@ async def update_user(
         profile_image: UploadFile = File(None),
         user_info: dict = Depends(get_user_info)
 ):
-
-
     user_id = user_info["user_id"]
     user_obj = await UserModel.get(user_id)
 
@@ -85,7 +78,6 @@ async def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     update_data = {}
-
 
     fields = {
         "first_name": first_name,
@@ -95,7 +87,7 @@ async def update_user(
     }
 
     for key, value in fields.items():
-        if value is not None:
+        if value is not None and str(value).strip() != "":
             update_data[key] = value
 
 
@@ -106,14 +98,15 @@ async def update_user(
         extension = os.path.splitext(profile_image.filename)[1]
         unique_filename = f"{uuid.uuid4()}{extension}"
         file_path = os.path.join(upload_dir, unique_filename)
-        base_url = str(request.base_url).replace("http://", "https://")
 
+        base_url = str(request.base_url).rstrip('/')
+        if "localhost" not in base_url:
+            base_url = base_url.replace("http://", "https://")
 
         try:
             async with aiofiles.open(file_path, 'wb') as out_file:
                 content = await profile_image.read()
                 await out_file.write(content)
-
 
             update_data["profile_image"] = f"{base_url}/{file_path}"
         except Exception as e:
@@ -122,12 +115,9 @@ async def update_user(
     if not update_data:
         raise HTTPException(status_code=400, detail="No data provided for update")
 
-
     await user_obj.set(update_data)
 
     return {"message": "Successfully updated profile", "data": update_data}
-
-
 
 
 
