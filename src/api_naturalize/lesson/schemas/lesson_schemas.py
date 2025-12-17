@@ -14,6 +14,11 @@ class LessonCreate(BaseModel):
     image_url: str
     course_id: str
 
+class LessonRes(LessonCreate):
+    id:str
+
+
+
 # Schema for updating Lesson
 class LessonUpdate(BaseModel):
     name: Optional[str] = None

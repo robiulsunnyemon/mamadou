@@ -9,7 +9,7 @@ from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse
     MostDifficultQuestionsResponse, UserStatsResponse, MonthlyRegistrationResponse, UserGrowthResponse, UserStatusFilter
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
-from api_naturalize.lesson.schemas.lesson_schemas import LessonResponseAdmin, LessonCreate
+from api_naturalize.lesson.schemas.lesson_schemas import LessonResponseAdmin, LessonRes
 from api_naturalize.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from api_naturalize.progress_lesson.schemas.progress_lesson_schemas import FilteredLessonResponse
 from api_naturalize.question.models.question_model import QuestionModel
@@ -227,7 +227,7 @@ async def get_all_lesson(
 
 
 # GET lesson by Course ID - simplified
-@router.get("/lesson/by_course_id/{id}",response_model=List[LessonCreate], status_code=status.HTTP_200_OK)
+@router.get("/lesson/by_course_id/{id}",response_model=List[LessonRes], status_code=status.HTTP_200_OK)
 async def get_lesson(id: str):
     """
     Get lesson by ID
