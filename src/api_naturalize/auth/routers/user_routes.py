@@ -37,25 +37,25 @@ async def get_user(id: str):
 
 @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
 async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_info)):
-    # ১. ইউজার আইডি বের করা
+
     user_id = user_info["user_id"]
 
-    # ২. ডাটাবেস থেকে ইউজার অবজেক্ট আনা
+
     user_obj = await UserModel.get(user_id)
     if not user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # ৩. শুধুমাত্র যে ডাটাগুলো ইউজার পাঠিয়েছে সেগুলো নেওয়া
+
     update_data = user_data.model_dump(exclude_unset=True)
 
     if not update_data:
         raise HTTPException(status_code=400, detail="No data provided for update")
 
-    # ৪. ডাটাবেসে আপডেট করা
+
     await user_obj.set(update_data)
 
-    # ৫. আপডেট হওয়া ইউজার ডাটা রিটার্ন করা
-    return user_obj
+
+    return {"message":"Successfully update profile"}
 
 
 
