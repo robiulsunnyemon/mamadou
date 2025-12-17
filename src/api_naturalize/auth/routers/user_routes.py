@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends,status
+from fastapi import APIRouter, HTTPException, Depends,status,File, UploadFile, Form,Request
 from typing import List
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserUpdate, UserResponse
@@ -8,7 +8,9 @@ from api_naturalize.leader_board.models.leader_board_model import LeaderBoardMod
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.question.models.question_model import QuestionModel
 from api_naturalize.utils.user_info import get_user_info
-
+import aiofiles
+import os
+import uuid
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -34,19 +36,88 @@ async def get_user(id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+#
+# @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
+# async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_info)):
+#
+#     user_id = user_info["user_id"]
+#
+#
+#     user_obj = await UserModel.get(user_id)
+#     if not user_obj:
+#         raise HTTPException(status_code=404, detail="User not found")
+#
+#
+#     update_data = user_data.model_dump(exclude_unset=True)
+#
+#     if not update_data:
+#         raise HTTPException(status_code=400, detail="No data provided for update")
+#
+#
+#     await user_obj.set(update_data)
+#
+#
+#     return {"message":"Successfully update profile"}
+#
+
+
+
+
+
+
 
 @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
-async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_info)):
+async def update_user(
+        request: Request,
+        first_name: str = Form(None),
+        last_name: str = Form(None),
+        email: str = Form(None),
+        phone_number: str = Form(None),
+        profile_image: UploadFile = File(None),
+        user_info: dict = Depends(get_user_info)
+):
+
 
     user_id = user_info["user_id"]
-
-
     user_obj = await UserModel.get(user_id)
+
     if not user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
+    update_data = {}
 
-    update_data = user_data.model_dump(exclude_unset=True)
+
+    fields = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "phone_number": phone_number
+    }
+
+    for key, value in fields.items():
+        if value is not None:
+            update_data[key] = value
+
+
+    if profile_image:
+        upload_dir = "static/profile_images"
+        os.makedirs(upload_dir, exist_ok=True)
+
+        extension = os.path.splitext(profile_image.filename)[1]
+        unique_filename = f"{uuid.uuid4()}{extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        base_url = str(request.base_url).replace("http://", "https://")
+
+
+        try:
+            async with aiofiles.open(file_path, 'wb') as out_file:
+                content = await profile_image.read()
+                await out_file.write(content)
+
+
+            update_data["profile_image"] = f"{base_url}/{file_path}"
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Could not save image: {str(e)}")
 
     if not update_data:
         raise HTTPException(status_code=400, detail="No data provided for update")
@@ -54,12 +125,7 @@ async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_
 
     await user_obj.set(update_data)
 
-
-    return {"message":"Successfully update profile"}
-
-
-
-
+    return {"message": "Successfully updated profile", "data": update_data}
 
 
 
