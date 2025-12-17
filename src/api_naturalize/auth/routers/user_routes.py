@@ -8,10 +8,11 @@ from api_naturalize.leader_board.models.leader_board_model import LeaderBoardMod
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.question.models.question_model import QuestionModel
 from api_naturalize.utils.user_info import get_user_info
-import shutil
 from pathlib import Path
+from typing import Annotated
+import shutil
 import uuid
-from pydantic import EmailStr
+
 
 
 
@@ -45,91 +46,97 @@ async def get_user(id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-#
-# @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
-# async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_info)):
-#
-#     user_id = user_info["user_id"]
-#
-#
-#     user_obj = await UserModel.get(user_id)
-#     if not user_obj:
-#         raise HTTPException(status_code=404, detail="User not found")
-#
-#
-#     update_data = user_data.model_dump(exclude_unset=True)
-#
-#     if not update_data:
-#         raise HTTPException(status_code=400, detail="No data provided for update")
-#
-#
-#     await user_obj.set(update_data)
-#
-#
-#     return {"message":"Successfully update profile"}
-#
-
 
 @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
-async def update_user(
-        request: Request,
-        first_name: str = Form(None),
-        last_name: str = Form(None),
-        email: EmailStr = Form(None),
-        phone_number: str = Form(None),
-        profile_image: UploadFile = File(None),
-        user_info: dict = Depends(get_user_info)
-):
-    user_id = user_info["user_id"]
-    user_obj = await UserModel.get(user_id)
+async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_info)):
 
+    user_id = user_info["user_id"]
+
+
+    user_obj = await UserModel.get(user_id)
     if not user_obj:
         raise HTTPException(status_code=404, detail="User not found")
 
-    update_data = {}
 
-    fields = {
-        "first_name": first_name,
-        "last_name": last_name,
-        "email": email,
-        "phone_number": phone_number
-    }
-
-    for key, value in fields.items():
-        if value is not None and str(value).strip() != "":
-            update_data[key] = value
-
-
-    if profile_image:
-
-        file_extension = Path(profile_image.filename).suffix
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = Path(UPLOAD_DIR) / unique_filename
-
-        try:
-
-            with open(file_path, "wb") as buffer:
-
-                shutil.copyfileobj(profile_image.file, buffer)
-        except Exception as e:
-
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Image upload failed: {e}"
-            )
-
-        base_url = str(request.base_url).replace("http://", "https://")
-        image_url = f"{base_url}static/{unique_filename}"
-        update_data["profile_image"] = f"{image_url}"
-
-
+    update_data = user_data.model_dump(exclude_unset=True)
 
     if not update_data:
         raise HTTPException(status_code=400, detail="No data provided for update")
 
+
     await user_obj.set(update_data)
 
-    return {"message": "Successfully updated profile", "data": update_data}
+
+    return {"message":"Successfully update profile"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@user_router.post("/update_profile_image", status_code=status.HTTP_201_CREATED)
+async def update_profile_image( # ফাংশন নাম প্রাসঙ্গিক করলাম
+        request: Request,
+        profile_image: Annotated[UploadFile, File()],
+        user: dict = Depends(get_user_info)
+):
+    # ১. ইউজার খুঁজে বের করা
+    db_user = await UserModel.get(user["user_id"])
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # ২. ফাইল সেভ করার লজিক
+    file_extension = Path(profile_image.filename).suffix
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = Path(UPLOAD_DIR) / unique_filename
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(profile_image.file, buffer)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {str(e)}"
+        )
+
+    # ৩. URL তৈরি করা
+    # প্রোডাকশনে https নিশ্চিত করতে আপনার লজিক ঠিক আছে
+    base_url = str(request.base_url).replace("http://", "https://")
+    image_url = f"{base_url}static/{unique_filename}"
+
+    # ৪. ডাটাবেস আপডেট (সঠিক পদ্ধতি)
+    await db_user.set({UserModel.profile_image: image_url})
+
+    return {
+        "message": "Successfully updated profile image",
+        "profile_image": image_url
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

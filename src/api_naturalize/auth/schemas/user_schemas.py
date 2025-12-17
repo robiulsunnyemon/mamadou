@@ -20,7 +20,6 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone_number: Optional[str] = None
-    profile_image: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: str
