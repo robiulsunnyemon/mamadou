@@ -1207,55 +1207,55 @@ class UserGrowthResponse(BaseModel):
 @router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
 async def get_user_growth():
     try:
-
+        # পাইপলাইনটি সরাসরি এভাবে লিখুন
         pipeline = [
             {
                 "$group": {
                     "_id": {
-                        "month": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
-                        "label": {"$dateToString": {"format": "%b", "date": "$created_at"}}
+                        "month_val": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
+                        "label_val": {"$dateToString": {"format": "%b", "date": "$created_at"}}
                     },
                     "count": {"$sum": 1}
                 }
             },
-            {"$sort": {"_id.month": 1}}
+            {"$sort": {"_id.month_val": 1}}
         ]
 
-
-        cursor = UserModel.aggregate(pipeline)
-        results = await cursor.to_list()
-
+        # Beanie এর aggregate মেথড কল করা
+        results = await UserModel.aggregate(pipeline).to_list()
 
         final_data = []
         cumulative_active_users = 0
         previous_month_active = 0
 
         for entry in results:
-            new_users_this_month = entry["count"]
-            cumulative_active_users += new_users_this_month
+            # entry["_id"] থেকে ডাটা নিতে হবে
+            month_str = entry["_id"]["month_val"]
+            label_str = entry["_id"]["label_val"]
+            new_users_count = entry["count"]
 
+            cumulative_active_users += new_users_count
 
             growth_rate = None
             if previous_month_active > 0:
                 growth_rate = round(
-                    ((cumulative_active_users - previous_month_active) / previous_month_active) * 100,
-                    1
+                    ((cumulative_active_users - previous_month_active) / previous_month_active) * 100, 1
                 )
 
             final_data.append({
-                "month": entry["_id"]["month"],
-                "label": entry["_id"]["label"],
+                "month": month_str,
+                "label": label_str,
                 "active_users": cumulative_active_users,
-                "new_users": new_users_this_month,
+                "new_users": new_users_count,
                 "monthly_growth_rate": growth_rate
             })
-
 
             previous_month_active = cumulative_active_users
 
         return final_data
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        # এরর ডিবাগ করার জন্য প্রিন্ট দিন
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
