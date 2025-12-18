@@ -34,6 +34,18 @@ class QuestionStatisticsResponse(BaseModel):
     success_rate: float
     wrong_percentage: float
 
+# Schema for question statistics
+class QuestionStatisticsWithCourseResponse(BaseModel):
+    question_id: str
+    course_id:str
+    course_name:str
+    question_name: str
+    total_attempts: int
+    wrong_attempts: int
+    correct_attempts: int
+    success_rate: float
+    wrong_percentage: float
+
 
 # Schema for most difficult questions
 class MostDifficultQuestionsResponse(BaseModel):

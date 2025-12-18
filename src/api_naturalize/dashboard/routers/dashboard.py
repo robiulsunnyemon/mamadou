@@ -6,7 +6,8 @@ from api_naturalize.auth.schemas.user_schemas import UserResponse
 from api_naturalize.course.models.course_model import CourseModel
 from api_naturalize.course.schemas.course_schemas import CourseResponse, CourseResponseAdmin
 from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse, QuestionStatisticsResponse, \
-    MostDifficultQuestionsResponse, UserStatsResponse, MonthlyRegistrationResponse, UserGrowthResponse, UserStatusFilter
+    MostDifficultQuestionsResponse, UserStatsResponse, MonthlyRegistrationResponse, UserGrowthResponse, \
+    UserStatusFilter, QuestionStatisticsWithCourseResponse
 from api_naturalize.database.database import get_database
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
@@ -454,8 +455,11 @@ async def get_question_statistics(
         question = await QuestionModel.get(question_id)
 
         if question:
-            result.append(QuestionStatisticsResponse(
+            db_course=await CourseModel.get(question.course_id)
+            result.append(QuestionStatisticsWithCourseResponse(
                 question_id=question_id,
+                course_id=db_course.id,
+                course_name=db_course.name,
                 question_name=question.name,
                 total_attempts=stats["total_attempts"],
                 wrong_attempts=stats["wrong_attempts"],
@@ -1211,7 +1215,7 @@ class UserGrowthResponse(BaseModel):
 @router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
 async def get_user_growth():
     try:
-        # ১. ডেট রেঞ্জ (গত ৬ মাস)
+
         start_date = (
                 datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 - relativedelta(months=5)
@@ -1231,12 +1235,10 @@ async def get_user_growth():
             {"$sort": {"_id.month": 1}}
         ]
 
-        # ২. সরাসরি ডাটাবেস থেকে কালেকশন এক্সেস করা
-        # এটি Beanie-র কোনো মেথডের ওপর নির্ভর করে না
-        db = get_database()
-        collection = db["users"]  # আপনার UserModel এর কালেকশন নাম 'users'
 
-        # ৩. এগ্রিগেশন রান করা
+        db = get_database()
+        collection = db["users"]
+
         raw_results = []
         cursor = collection.aggregate(pipeline)
         async for doc in cursor:
@@ -1245,7 +1247,7 @@ async def get_user_growth():
         if not raw_results:
             return []
 
-        # ৪. ক্যালকুলেশন লজিক
+
         response = []
         cumulative_active = 0
         prev_active_total = 0
