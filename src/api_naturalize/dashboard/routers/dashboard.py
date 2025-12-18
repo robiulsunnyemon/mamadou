@@ -1111,3 +1111,38 @@ async def all_questions(skip: int = 0, limit: int = 10):
         return obj
 
     return clean_ids(encoded_res)
+
+
+from fastapi import APIRouter, HTTPException, status
+
+
+
+
+@router.post("/user/status/change/{id}", status_code=status.HTTP_200_OK)
+async def change_status(id: str, acc_status: str):
+    db_user = await UserModel.get(id)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+
+    status_map = {
+        "active": AccountStatus.ACTIVE,
+        "suspend": AccountStatus.SUSPEND,
+        "inactive": AccountStatus.INACTIVE
+    }
+
+
+    if acc_status not in status_map:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Account status must be (active, suspend, or inactive)"
+        )
+
+
+    db_user.account_status = status_map[acc_status]
+    await db_user.update()
+
+    return {"message": f"Successfully updated account status to {acc_status}"}
