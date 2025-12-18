@@ -407,7 +407,7 @@ async def get_course(id: str):
 
 
 # GET question statistics with filtering - FINAL FIXED VERSION
-@router.get("/statistics/questions/", response_model=List[QuestionStatisticsResponse])
+@router.get("/statistics/questions/", response_model=List[QuestionStatisticsWithCourseResponse],status_code=status.HTTP_200_OK)
 async def get_question_statistics(
         min_attempts: int = 1,
         min_wrong_percentage: float = 0.0,
