@@ -1204,6 +1204,7 @@ class UserGrowthResponse(BaseModel):
     monthly_growth_rate: Optional[float]
 
 
+
 @router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
 async def get_user_growth():
     try:
@@ -1220,7 +1221,7 @@ async def get_user_growth():
             {"$sort": {"_id.month_val": 1}}
         ]
 
-        # এখানে length=None যোগ করা হয়েছে যা Cursor থেকে লিস্টে রূপান্তর করবে
+        # সঠিক ব্যবহার: aggregate() এর পরে সরাসরি to_list() await করুন
         results = await UserModel.aggregate(pipeline).to_list(length=None)
 
         if not results:
