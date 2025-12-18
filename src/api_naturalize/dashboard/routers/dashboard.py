@@ -1203,7 +1203,6 @@ class UserGrowthResponse(BaseModel):
     new_users: int
     monthly_growth_rate: Optional[float]
 
-
 @router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
 async def get_user_growth():
     try:
@@ -1220,25 +1219,31 @@ async def get_user_growth():
             {"$sort": {"_id.month_val": 1}}
         ]
 
-        # ভুল ছিল এখানে: await UserModel.aggregate(pipeline) সরাসরি কাজ করে না
-        # সমাধান: aggregate() এর পর to_list() ব্যবহার করতে হবে
+        # Beanie aggregate cursor থেকে ডেটা পাওয়ার সঠিক উপায়
         results = await UserModel.aggregate(pipeline).to_list()
+
+        if not results:
+            return []
 
         final_data = []
         cumulative_active_users = 0
-        previous_month_active = 0
+        previous_month_total = 0
 
         for entry in results:
+            # ডাটা ম্যাপ করা
             month_str = entry["_id"]["month_val"]
             label_str = entry["_id"]["label_val"]
             new_users_count = entry["count"]
 
+            # Active users মানে ওই মাস পর্যন্ত মোট ইউজার (Cumulative)
             cumulative_active_users += new_users_count
 
+            # গ্রোথ রেট ক্যালকুলেশন
             growth_rate = None
-            if previous_month_active > 0:
+            if previous_month_total > 0:
                 growth_rate = round(
-                    ((cumulative_active_users - previous_month_active) / previous_month_active) * 100, 1
+                    ((cumulative_active_users - previous_month_total) / previous_month_total) * 100,
+                    1
                 )
 
             final_data.append({
@@ -1249,10 +1254,11 @@ async def get_user_growth():
                 "monthly_growth_rate": growth_rate
             })
 
-            previous_month_active = cumulative_active_users
+            # লুপের শেষে বর্তমান টোটালকে আগের মাসের টোটাল হিসেবে সেট করা
+            previous_month_total = cumulative_active_users
 
         return final_data
 
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Aggregation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
