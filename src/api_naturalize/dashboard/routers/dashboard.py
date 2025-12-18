@@ -460,6 +460,7 @@ async def get_question_statistics(
                 question_id=question_id,
                 course_id=db_course.id,
                 course_name=db_course.name,
+                course_description=db_course.description,
                 question_name=question.name,
                 total_attempts=stats["total_attempts"],
                 wrong_attempts=stats["wrong_attempts"],

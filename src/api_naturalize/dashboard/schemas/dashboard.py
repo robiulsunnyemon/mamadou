@@ -39,6 +39,7 @@ class QuestionStatisticsWithCourseResponse(BaseModel):
     question_id: str
     course_id:str
     course_name:str
+    course_description:str
     question_name: str
     total_attempts: int
     wrong_attempts: int
