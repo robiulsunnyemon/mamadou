@@ -1079,3 +1079,34 @@ async def all_lessons(skip: int = 0, limit: int = 10):
         return obj
 
     return clean_ids(encoded_res)
+
+
+
+@router.get("filter/questions",status_code=status.HTTP_200_OK)
+async def all_questions(skip: int = 0, limit: int = 10):
+    safe_skip = int(skip)
+    safe_limit = int(limit)
+    db_questions=await QuestionModel.find_all().sort("-created_at").skip(safe_skip).limit(safe_limit).to_list()
+    res=[]
+    for db_question in db_questions:
+        res_dict={}
+        db_course=await CourseModel.get(db_question.course_id)
+        db_lesson=await LessonModel.get(db_question.lesson_id)
+        res_dict["question"]=db_question
+        res_dict["course"]=db_course
+        res_dict["lesson"]=db_lesson
+        res.append(res_dict)
+    encoded_res = jsonable_encoder(res)
+
+    def clean_ids(obj):
+        if isinstance(obj, list):
+            return [clean_ids(i) for i in obj]
+        if isinstance(obj, dict):
+
+            if "_id" in obj:
+                obj["id"] = str(obj["_id"])
+                del obj["_id"]
+            return {k: clean_ids(v) for k, v in obj.items()}
+        return obj
+
+    return clean_ids(encoded_res)
