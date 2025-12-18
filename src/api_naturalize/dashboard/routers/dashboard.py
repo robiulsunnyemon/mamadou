@@ -1095,6 +1095,7 @@ async def all_questions(skip: int = 0, limit: int = 10):
         res_dict["question"]=db_question
         res_dict["course"]=db_course
         res_dict["lesson"]=db_lesson
+        res_dict["status"]="active"
         res.append(res_dict)
     encoded_res = jsonable_encoder(res)
 
