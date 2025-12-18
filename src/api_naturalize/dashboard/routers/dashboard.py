@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException,status,File, UploadFile, Form,Request
-from typing import List
+from typing import List,Optional
 from api_naturalize.answer.models.answer_model import AnswerModel
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserResponse
@@ -21,7 +21,7 @@ from typing import Annotated
 import shutil
 import uuid
 from fastapi.encoders import jsonable_encoder
-
+from pydantic import BaseModel
 
 UPLOAD_DIR = "uploaded_images"
 Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
@@ -1195,5 +1195,67 @@ async def get_all_acc_status_user(
 
     return res
 
+
+class UserGrowthResponse(BaseModel):
+    month: str
+    label: str
+    active_users: int
+    new_users: int
+    monthly_growth_rate: Optional[float]
+
+
+@router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
+async def get_user_growth():
+    try:
+
+        pipeline = [
+            {
+                "$group": {
+                    "_id": {
+                        "month": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
+                        "label": {"$dateToString": {"format": "%b", "date": "$created_at"}}
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id.month": 1}}
+        ]
+
+
+        cursor = UserModel.aggregate(pipeline)
+        results = await cursor.to_list()
+
+
+        final_data = []
+        cumulative_active_users = 0
+        previous_month_active = 0
+
+        for entry in results:
+            new_users_this_month = entry["count"]
+            cumulative_active_users += new_users_this_month
+
+
+            growth_rate = None
+            if previous_month_active > 0:
+                growth_rate = round(
+                    ((cumulative_active_users - previous_month_active) / previous_month_active) * 100,
+                    1
+                )
+
+            final_data.append({
+                "month": entry["_id"]["month"],
+                "label": entry["_id"]["label"],
+                "active_users": cumulative_active_users,
+                "new_users": new_users_this_month,
+                "monthly_growth_rate": growth_rate
+            })
+
+
+            previous_month_active = cumulative_active_users
+
+        return final_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
