@@ -1207,7 +1207,6 @@ class UserGrowthResponse(BaseModel):
 @router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
 async def get_user_growth():
     try:
-        # পাইপলাইনটি সরাসরি এভাবে লিখুন
         pipeline = [
             {
                 "$group": {
@@ -1221,7 +1220,8 @@ async def get_user_growth():
             {"$sort": {"_id.month_val": 1}}
         ]
 
-        # Beanie এর aggregate মেথড কল করা
+        # ভুল ছিল এখানে: await UserModel.aggregate(pipeline) সরাসরি কাজ করে না
+        # সমাধান: aggregate() এর পর to_list() ব্যবহার করতে হবে
         results = await UserModel.aggregate(pipeline).to_list()
 
         final_data = []
@@ -1229,7 +1229,6 @@ async def get_user_growth():
         previous_month_active = 0
 
         for entry in results:
-            # entry["_id"] থেকে ডাটা নিতে হবে
             month_str = entry["_id"]["month_val"]
             label_str = entry["_id"]["label_val"]
             new_users_count = entry["count"]
@@ -1255,7 +1254,5 @@ async def get_user_growth():
         return final_data
 
     except Exception as e:
-        # এরর ডিবাগ করার জন্য প্রিন্ট দিন
-        print(f"Error occurred: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
-
+        print(f"Error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
