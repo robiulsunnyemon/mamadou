@@ -1140,7 +1140,60 @@ async def change_status(id: str, acc_status: str):
             detail="Account status must be (active, suspend, or inactive)"
         )
 
-
     await db_user.set({UserModel.account_status: status_map[acc_status]})
 
     return {"message": f"Successfully updated account status to {acc_status}"}
+
+
+@router.get("/user/all/filter/{acc_status}", status_code=status.HTTP_200_OK)
+async def get_all_acc_status_user(
+        acc_status: str,
+        skip: int = 0,
+        limit: int = 10
+):
+    status_map = {
+        "active": AccountStatus.ACTIVE,
+        "suspend": AccountStatus.SUSPEND,
+        "inactive": AccountStatus.INACTIVE
+    }
+
+    if acc_status not in status_map:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Account status must be (active, suspend, or inactive)"
+        )
+
+
+    target_status = status_map[acc_status]
+
+
+    db_users = await UserModel.find(
+        UserModel.account_status == target_status
+    ).sort("-created_at").skip(skip).limit(limit).to_list()
+
+    res = []
+
+
+    for db_user in db_users:
+
+
+        total_ans = await AnswerModel.find(AnswerModel.user_id == db_user.id).count()
+
+        total_r8_ans = await AnswerModel.find(
+            AnswerModel.user_id == db_user.id,
+            AnswerModel.score == 1
+        ).count()
+
+        success_rate = (total_r8_ans / total_ans * 100) if total_ans > 0 else 0
+
+        res.append({
+            "user": UserResponse(**db_user.model_dump()),
+            "score": total_r8_ans,
+            "success_rate": round(success_rate, 2),
+            "subscription": "basic"
+        })
+
+    return res
+
+
+
