@@ -7,6 +7,7 @@ from api_naturalize.course.models.course_model import CourseModel
 from api_naturalize.course.schemas.course_schemas import CourseResponse, CourseResponseAdmin
 from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse, QuestionStatisticsResponse, \
     MostDifficultQuestionsResponse, UserStatsResponse, MonthlyRegistrationResponse, UserGrowthResponse, UserStatusFilter
+from api_naturalize.database.database import get_database
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.lesson.schemas.lesson_schemas import LessonResponseAdmin, LessonRes
@@ -22,6 +23,9 @@ import shutil
 import uuid
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
+from dateutil.relativedelta import relativedelta
+
+
 
 UPLOAD_DIR = "uploaded_images"
 Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
@@ -1204,60 +1208,68 @@ class UserGrowthResponse(BaseModel):
     monthly_growth_rate: Optional[float]
 
 
-
 @router.get("/analytics/user-growth", response_model=List[UserGrowthResponse])
 async def get_user_growth():
     try:
+        # ১. ডেট রেঞ্জ (গত ৬ মাস)
+        start_date = (
+                datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                - relativedelta(months=5)
+        )
+
         pipeline = [
+            {"$match": {"created_at": {"$gte": start_date}}},
             {
                 "$group": {
                     "_id": {
-                        "month_val": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
-                        "label_val": {"$dateToString": {"format": "%b", "date": "$created_at"}}
+                        "month": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
+                        "label": {"$dateToString": {"format": "%b", "date": "$created_at"}}
                     },
-                    "count": {"$sum": 1}
+                    "new_users": {"$sum": 1}
                 }
             },
-            {"$sort": {"_id.month_val": 1}}
+            {"$sort": {"_id.month": 1}}
         ]
 
-        # সঠিক ব্যবহার: aggregate() এর পরে সরাসরি to_list() await করুন
-        results = await UserModel.aggregate(pipeline).to_list(length=None)
+        # ২. সরাসরি ডাটাবেস থেকে কালেকশন এক্সেস করা
+        # এটি Beanie-র কোনো মেথডের ওপর নির্ভর করে না
+        db = get_database()
+        collection = db["users"]  # আপনার UserModel এর কালেকশন নাম 'users'
 
-        if not results:
+        # ৩. এগ্রিগেশন রান করা
+        raw_results = []
+        cursor = collection.aggregate(pipeline)
+        async for doc in cursor:
+            raw_results.append(doc)
+
+        if not raw_results:
             return []
 
-        final_data = []
-        cumulative_active_users = 0
-        previous_month_total = 0
+        # ৪. ক্যালকুলেশন লজিক
+        response = []
+        cumulative_active = 0
+        prev_active_total = 0
 
-        for entry in results:
-            month_str = entry["_id"]["month_val"]
-            label_str = entry["_id"]["label_val"]
-            new_users_count = entry["count"]
-
-            cumulative_active_users += new_users_count
+        for row in raw_results:
+            new_users_count = row["new_users"]
+            cumulative_active += new_users_count
 
             growth_rate = None
-            if previous_month_total > 0:
-                growth_rate = round(
-                    ((cumulative_active_users - previous_month_total) / previous_month_total) * 100,
-                    2
-                )
+            if prev_active_total > 0:
+                growth_rate = round(((cumulative_active - prev_active_total) / prev_active_total) * 100, 1)
 
-            final_data.append({
-                "month": month_str,
-                "label": label_str,
-                "active_users": cumulative_active_users,
+            response.append({
+                "month": row["_id"]["month"],
+                "label": row["_id"]["label"],
+                "active_users": cumulative_active,
                 "new_users": new_users_count,
                 "monthly_growth_rate": growth_rate
             })
 
-            previous_month_total = cumulative_active_users
+            prev_active_total = cumulative_active
 
-        return final_data
+        return response
 
     except Exception as e:
-        # এরর ডিবাগিং এর জন্য লগ প্রিন্ট করুন
-        print(f"Aggregation Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        print(f"Final Attempt Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
