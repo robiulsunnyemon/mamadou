@@ -13,7 +13,7 @@ from api_naturalize.progress_lesson.routers.progress_lesson_routes import router
 from api_naturalize.leader_board.routers.leader_board_routes import router as leaderboard_router
 from api_naturalize.dashboard.routers.dashboard import router as dashboard_router
 from fastapi.staticfiles import StaticFiles
-
+from api_naturalize.time_storage.routers.time_storage_routes import router as time_storage_router
 
 
 @asynccontextmanager
@@ -65,4 +65,4 @@ app.include_router(question_router,prefix="/api/v1")
 app.include_router(answer_router,prefix="/api/v1")
 app.include_router(progress_lesson_router,prefix="/api/v1")
 app.include_router(leaderboard_router,prefix="/api/v1")
-
+app.include_router(time_storage_router,prefix="/api/v1")
