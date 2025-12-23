@@ -30,6 +30,24 @@ async def get_time_storage(time_storage_id: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="TimeStorage not found")
     return time_storage
 
+
+# GET time_storage by ID
+@router.get("/user/{user_id}", response_model=TimestorageResponse, status_code=status.HTTP_200_OK)
+async def get_time_storage(user_id:str):
+    """
+    Get time_storage by ID
+    """
+    db_user = await  UserModel.get(user_id)
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
+
+    time_storage = await TimeStorageModel.find_one(TimeStorageModel.user_id==db_user.id)
+    if not time_storage:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="TimeStorage not found")
+    return time_storage
+
+
+
 # POST create new time_storage
 @router.post("/",status_code=status.HTTP_201_CREATED)
 async def create_time_storage(time_storage_data: TimestorageCreate,user:dict=Depends(get_user_info)):
