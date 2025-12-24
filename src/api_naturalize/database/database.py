@@ -8,6 +8,7 @@ from api_naturalize.course.models.course_model import CourseModel
 from api_naturalize.frequent_question.models.frequent_question_model import FrequentQuestionModel
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
+from api_naturalize.notification.models.notification_model import notificationModel
 from api_naturalize.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from api_naturalize.question.models.question_model import QuestionModel
 from api_naturalize.time_storage.models.time_storage_model import TimeStorageModel
@@ -39,7 +40,8 @@ async def initialize_database():
             AnswerModel,
             ProgressLessonModel,
             LeaderBoardModel,
-            TimeStorageModel
+            TimeStorageModel,
+            notificationModel
 
 
         ],

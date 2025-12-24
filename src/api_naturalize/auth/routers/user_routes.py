@@ -16,9 +16,6 @@ import uuid
 
 
 
-
-
-
 UPLOAD_DIR = "uploaded_images"
 Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 

@@ -20,6 +20,7 @@ def get_user_info(token: str = Depends(oauth2_scheme)):
     try:
 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"DEBUG Payload: {payload}")
 
 
         email: str = payload.get("sub")

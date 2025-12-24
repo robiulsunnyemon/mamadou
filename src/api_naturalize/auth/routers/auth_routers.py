@@ -8,6 +8,8 @@ from api_naturalize.dashboard.routers.dashboard import get_in_progress_lessons
 from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse
 from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
 from api_naturalize.lesson.models.lesson_model import LessonModel
+from api_naturalize.notification.routers.notification_routes import create_notification
+from api_naturalize.notification.schemas.notification_schemas import NotificationCreate
 from api_naturalize.question.models.question_model import QuestionModel
 
 from api_naturalize.utils.email_config import SendOtpModel
@@ -78,6 +80,12 @@ async def verify_otp(user:VerifyOTP):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Wrong OTP")
 
     db_user.is_verified=True
+    notification=NotificationCreate(
+        user_id=db_user.id,
+        title=f"Welcome {db_user.first_name}{db_user.last_name}",
+        description="Your account has been created successfully.Let’s get started with your first theme"
+    )
+    await create_notification(notification)
     await db_user.save()
     return {"message":"You have  verified","data":db_user}
 
@@ -98,6 +106,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not db_user.is_verified:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Your account is not verified with OTP")
 
+
+    notification=NotificationCreate(
+        user_id=db_user.id,
+        title=f"Welcome back! {db_user.first_name}{db_user.last_name}",
+        description="You’re successfully logged in. Let’s continue where you left off"
+    )
+    await create_notification(notification)
+
     token = create_access_token(data={"sub": db_user.email, "role": db_user.role.value, "user_id": db_user.id})
     return {"access_token": token, "token_type": "bearer"}
 
@@ -113,6 +129,8 @@ async def resend_otp(request: ResendOTPRequest):
     await db_user.save()
     send_otp_data = SendOtpModel(email=db_user.email, otp=db_user.otp)
     ##await send_otp(send_otp_data)
+
+
     return {
         "message": "User registered successfully.Please check your email.A 6 digit otp has been sent.",
         "data":db_user,
@@ -133,6 +151,16 @@ async def reset_password(request: ResetPasswordRequest):
 
     hashed_password = get_hashed_password(request.new_password)
     db_user.password = hashed_password
+
+
+    notification=NotificationCreate(
+        user_id=db_user.id,
+        title="Password updated successfully",
+        description="Your account password was changed successfully.If this wasn’t you, please reset your password immediately."
+    )
+    await create_notification(notification)
+
+
     await db_user.save()
     return {"message":"successfully reset password"}
 
@@ -174,5 +202,13 @@ async def google_login_token(access_token: str):
 
 
     # 3️⃣ Generate JWT token
+
+    notification = NotificationCreate(
+        user_id=db_user.id,
+        title="Account created securely",
+        description="You signed up using your Google account.No password needed—your account is protected."
+    )
+    await create_notification(notification)
+
     token = create_access_token(data={"sub": db_user.email, "role": db_user.role.value, "user_id": db_user.id})
     return {"access_token": token, "token_type": "bearer"}
