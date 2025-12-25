@@ -1283,90 +1283,103 @@ async def get_user_growth():
 
 @router.get("/all-courses-stats")
 async def get_all_courses_stats():
-    pipeline = [
-        # ১. প্রতিটি কোর্সের জন্য লেশন সংখ্যা গুনে নেওয়া
-        {
-            "$lookup": {
-                "from": "lessons",
-                "localField": "_id",
-                "foreignField": "course_id",
-                "as": "all_lessons"
-            }
-        },
-        {
-            "$addFields": {
-                "total_lessons_count": {"$size": "$all_lessons"}
-            }
-        },
-        # ২. ঐ কোর্সের সকল ইউজার প্রগ্রেস নিয়ে আসা
-        {
-            "$lookup": {
-                "from": "progress_lessons",
-                "localField": "_id",
-                "foreignField": "course_id",
-                "as": "user_progress_data"
-            }
-        },
-        # ৩. ইউজার অনুযায়ী প্রগ্রেস গ্রুপ করা
-        {
-            "$unwind": {
-                "path": "$user_progress_data",
-                "preserveNullAndEmptyArrays": True
-            }
-        },
-        {
-            "$group": {
-                "_id": {
+    try:
+        pipeline = [
+
+            {
+                "$lookup": {
+                    "from": "lessons",
+                    "localField": "_id",
+                    "foreignField": "course_id",
+                    "as": "all_lessons"
+                }
+            },
+            {
+                "$addFields": {
+                    "total_lessons_count": {"$size": "$all_lessons"}
+                }
+            },
+
+            {
+                "$lookup": {
+                    "from": "progress_lessons",
+                    "localField": "_id",
+                    "foreignField": "course_id",
+                    "as": "user_progress_data"
+                }
+            },
+
+            {
+                "$unwind": {
+                    "path": "$user_progress_data",
+                    "preserveNullAndEmptyArrays": True
+                }
+            },
+
+            {
+                "$group": {
+                    "_id": {
+                        "course_id": "$_id",
+                        "user_id": "$user_progress_data.user_id"
+                    },
+                    "course_name": {"$first": "$name"},
+                    "total_lessons": {"$first": "$total_lessons_count"},
+                    "sum_progress": {"$sum": "$user_progress_data.progress"}
+                }
+            },
+
+            {
+                "$project": {
+                    "course_name": 1,
+                    "user_id": "$_id.user_id",
+                    "course_completion": {
+                        "$cond": [
+                            {"$gt": ["$total_lessons", 0]},
+                            {"$divide": ["$sum_progress", "$total_lessons"]},
+                            0
+                        ]
+                    }
+                }
+            },
+
+            {
+                "$group": {
+                    "_id": "$_id.course_id",
+                    "course_name": {"$first": "$course_name"},
+                    "total_students": {
+                        "$sum": {"$cond": [{"$ifNull": ["$user_id", False]}, 1, 0]}
+                    },
+                    "completed_count": {
+                        "$sum": {"$cond": [{"$gte": ["$course_completion", 99.9]}, 1, 0]}
+                    },
+                    "avg_progress": {"$avg": "$course_completion"}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
                     "course_id": "$_id",
-                    "course_name": "$name",
-                    "user_id": "$user_progress_data.user_id",
-                    "total_lessons": "$total_lessons_count"
-                },
-                "sum_progress": {"$sum": "$user_progress_data.progress"}
-            }
-        },
-        # ৪. প্রতিটি ইউজারের কোর্স কমপ্লিশন পার্সেন্টেজ বের করা
-        {
-            "$project": {
-                "course_completion": {
-                    "$cond": [
-                        {"$gt": ["$_id.total_lessons", 0]},
-                        {"$divide": ["$sum_progress", "$_id.total_lessons"]},
-                        0
-                    ]
+                    "course_name": 1,
+                    "total_students": 1,
+                    "completed_count": 1,
+                    "average_progress": {"$round": ["$avg_progress", 2]}
                 }
             }
-        },
-        # ৫. ফাইনাল রেজাল্ট: কোর্স অনুযায়ী কতজন শেষ করেছে এবং গড় প্রগ্রেস
-        {
-            "$group": {
-                "_id": "$_id.course_id",
-                "course_name": {"$first": "$_id.course_name"},
-                "total_students": {
-                    "$sum": {"$cond": [{"$ifNull": ["$_id.user_id", False]}, 1, 0]}
-                },
-                "completed_count": {
-                    "$sum": {"$cond": [{"$gte": ["$course_completion", 100]}, 1, 0]}
-                },
-                "avg_course_progress": {"$avg": "$course_completion"}
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "course_id": "$_id",
-                "course_name": 1,
-                "total_students": 1,
-                "completed_count": 1,
-                "average_progress": {"$round": ["$avg_course_progress", 2]}
-            }
-        }
-    ]
+        ]
 
-    db = get_database()
-    collection = db["courses"]
 
-    # Beanie এর মাধ্যমে aggregate কুয়েরি চালানো
-    # stats = await CourseModel.aggregate(pipeline).to_list()
-    stats=collection.aggregate(pipeline)
-    return stats
+        db = get_database()
+        collection = db["courses"]
+
+        results = []
+        cursor = collection.aggregate(pipeline)
+
+
+        async for doc in cursor:
+            results.append(doc)
+
+        return results
+
+    except Exception as e:
+        print(f"Stats Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
