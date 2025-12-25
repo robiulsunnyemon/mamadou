@@ -128,3 +128,23 @@ async def create_bulk_questions(bulk_data: BulkQuestionCreate):
         created_count=len(created_questions),
         questions=created_questions
     )
+
+
+
+
+@router.delete("/delete/all", status_code=status.HTTP_200_OK)
+async def all_question_delete():
+    try:
+
+        result = await QuestionModel.find_all().delete()
+
+        return {
+            "status": "success",
+            "message": "All questions data has been deleted successfully",
+            "deleted_count": result
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {str(e)}"
+        )

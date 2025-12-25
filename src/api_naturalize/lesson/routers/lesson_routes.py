@@ -193,3 +193,21 @@ async def create_bulk_lessons(bulk_data: BulkLessonCreate):
         created_count=len(created_lessons),
         lessons=created_lessons
     )
+
+
+@router.delete("/delete/all", status_code=status.HTTP_200_OK)
+async def all_lesson_delete():
+    try:
+
+        result = await LessonModel.find_all().delete()
+
+        return {
+            "status": "success",
+            "message": "All lesson data has been deleted successfully",
+            "deleted_count": result
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {str(e)}"
+        )

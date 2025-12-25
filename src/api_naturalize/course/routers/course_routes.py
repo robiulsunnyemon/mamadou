@@ -213,3 +213,21 @@ async def bulk_create_courses_with_custom_response(courses_data: List[CourseCrea
         "created_courses": created_courses,
         "failed_courses": failed_courses
     }
+
+
+@router.delete("/delete/all", status_code=status.HTTP_200_OK)
+async def all_course_delete():
+    try:
+
+        result = await CourseModel.find_all().delete()
+
+        return {
+            "status": "success",
+            "message": "All course data has been deleted successfully",
+            "deleted_count": result
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {str(e)}"
+        )
