@@ -199,12 +199,12 @@ async def create_bulk_lessons(bulk_data: BulkLessonCreate):
 async def all_lesson_delete():
     try:
 
-        result = await LessonModel.find_all().delete()
+        await LessonModel.find_all().delete()
 
         return {
             "status": "success",
             "message": "All lesson data has been deleted successfully",
-            "deleted_count": result
+
         }
     except Exception as e:
         raise HTTPException(

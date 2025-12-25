@@ -136,12 +136,12 @@ async def create_bulk_questions(bulk_data: BulkQuestionCreate):
 async def all_question_delete():
     try:
 
-        result = await QuestionModel.find_all().delete()
+        await QuestionModel.find_all().delete()
 
         return {
             "status": "success",
             "message": "All questions data has been deleted successfully",
-            "deleted_count": result
+
         }
     except Exception as e:
         raise HTTPException(
