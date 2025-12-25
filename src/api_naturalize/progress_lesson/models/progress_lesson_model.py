@@ -7,6 +7,7 @@ import uuid
 class ProgressLessonModel(Document):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
     lesson_id: str = ""
+    course_id: str = "" ##add new
     progress: float = 0.0
     user_id: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

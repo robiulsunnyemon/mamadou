@@ -149,7 +149,8 @@ async def create_answer(answer_data: AnswerCreate, user: dict = Depends(get_user
         progress_data = ProgressLessonModel(
             lesson_id=db_question.lesson_id,
             progress=progress_percentage,
-            user_id=user_id
+            user_id=user_id,
+            course_id=db_question.course_id
         )
         await progress_data.insert()
 

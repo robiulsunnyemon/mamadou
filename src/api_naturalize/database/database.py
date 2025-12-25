@@ -16,7 +16,7 @@ from api_naturalize.time_storage.models.time_storage_model import TimeStorageMod
 # MongoDB connection settings
 # MongoDB connection settings
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "api_naturalize")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "mamadou")
 
 
 client: Optional[AsyncIOMotorClient] = None

@@ -5,6 +5,7 @@ from datetime import datetime
 # Schema for creating new ProgressLesson
 class ProgresslessonCreate(BaseModel):
     lesson_id: str
+    course_id: str ##add
     progress: float
     user_id: str
 
@@ -20,6 +21,7 @@ class ProgresslessonResponse(BaseModel):
     lesson_id: str
     progress: float
     user_id: str
+    course_id: str ##add
     created_at: datetime
     updated_at: datetime
 

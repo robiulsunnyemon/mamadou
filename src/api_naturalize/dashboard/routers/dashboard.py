@@ -1276,3 +1276,14 @@ async def get_user_growth():
     except Exception as e:
         print(f"Final Attempt Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.get("/course/performance",status_code=status.HTTP_200_OK)
+async def get_course_performance(  skip: int = 0,limit: int = 10):
+    db_courses=await CourseModel.find().sort("-created_at").skip(skip).limit(limit).to_list()
+    for course in db_courses:
+        db_lessons=await LessonModel.find_all(LessonModel.course_id==course.id).to_list()
+        for lesson in db_lessons:
+            db_progress=await ProgressLessonModel.find_all(ProgressLessonModel.lesson_id==lesson.id).to_list()
+
