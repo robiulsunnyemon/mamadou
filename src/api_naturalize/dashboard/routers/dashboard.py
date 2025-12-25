@@ -1279,6 +1279,8 @@ async def get_user_growth():
 
 
 
+
+
 @router.get("/all-courses-stats")
 async def get_all_courses_stats():
     pipeline = [
@@ -1361,6 +1363,10 @@ async def get_all_courses_stats():
         }
     ]
 
+    db = get_database()
+    collection = db["courses"]
+
     # Beanie এর মাধ্যমে aggregate কুয়েরি চালানো
-    stats = await CourseModel.aggregate(pipeline).to_list()
+    # stats = await CourseModel.aggregate(pipeline).to_list()
+    stats=collection.aggregate(pipeline)
     return stats
