@@ -9,6 +9,7 @@ from api_naturalize.course.routers.course_routes import router as course_router
 from api_naturalize.lesson.routers.lesson_routes import router as lesson_router
 from api_naturalize.question.routers.question_routes import router as question_router
 from api_naturalize.answer.routers.answer_routes import router as answer_router
+from api_naturalize.payments.routers.payments_routes import router as payment_router
 from api_naturalize.progress_lesson.routers.progress_lesson_routes import router as progress_lesson_router
 from api_naturalize.leader_board.routers.leader_board_routes import router as leaderboard_router
 from api_naturalize.dashboard.routers.dashboard import router as dashboard_router
@@ -67,3 +68,4 @@ app.include_router(progress_lesson_router,prefix="/api/v1")
 app.include_router(leaderboard_router,prefix="/api/v1")
 app.include_router(time_storage_router,prefix="/api/v1")
 app.include_router(notification_router,prefix="/api/v1")
+app.include_router(payment_router,prefix="/api/v1")
