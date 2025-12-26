@@ -4,7 +4,6 @@ from datetime import datetime
 
 # Schema for creating new Payments
 class PaymentsCreate(BaseModel):
-    user_id: str
     amount: float
     subscription_name: str
 
