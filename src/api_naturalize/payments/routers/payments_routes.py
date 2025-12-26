@@ -84,7 +84,7 @@ async def delete_payments(payments_id: str):
 
 
 
-@router.get("/payments/total-last-6-months")
+@router.get("/payments/total-last-12-months")
 async def get_total_amount_last_6_months():
     try:
 
@@ -124,7 +124,7 @@ async def get_total_amount_last_6_months():
         return {
             "status": "success",
             "total_amount": round(total_sum, 2),
-            "time_period": "last 6 months"
+            "time_period": "last 12 months"
         }
 
     except Exception as e:
