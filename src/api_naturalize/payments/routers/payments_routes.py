@@ -1,9 +1,15 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from api_naturalize.auth.models.user_model import UserModel
+from api_naturalize.database.database import get_database
 from api_naturalize.payments.models.payments_model import PaymentsModel
 from api_naturalize.payments.schemas.payments_schemas import PaymentsCreate, PaymentsUpdate, PaymentsResponse
 from api_naturalize.utils.user_info import get_user_info
+from datetime import datetime, timedelta, timezone
+from typing import Dict
+
+
+
 
 router = APIRouter(prefix="/paymentss", tags=["paymentss"])
 
@@ -73,3 +79,54 @@ async def delete_payments(payments_id: str):
 
     await payments.delete()
     return {"message": "Payments deleted successfully"}
+
+
+
+
+
+@router.get("/payments/total-last-6-months")
+async def get_total_amount_last_6_months():
+    try:
+
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
+
+
+        pipeline = [
+            {
+                "$match": {
+                    "created_at": {"$gte": six_months_ago}
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "total": {"$sum": "$amount"}
+                }
+            }
+        ]
+
+
+        db = get_database()
+        collection = db["paymentss"]
+
+        results = []
+        cursor = collection.aggregate(pipeline)
+        total_sum = 0.0
+
+
+        async for doc in cursor:
+            results.append(doc)
+
+
+        if results:
+            total_sum = results[0].get("total", 0.0)
+
+        return {
+            "status": "success",
+            "total_amount": round(total_sum, 2),
+            "time_period": "last 6 months"
+        }
+
+    except Exception as e:
+        print(f"Stats Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
