@@ -88,7 +88,7 @@ async def delete_payments(payments_id: str):
 async def get_total_amount_last_6_months():
     try:
 
-        six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=365)
 
 
         pipeline = [
