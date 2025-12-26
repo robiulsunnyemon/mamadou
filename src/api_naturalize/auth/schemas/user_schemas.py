@@ -27,6 +27,7 @@ class UserResponse(BaseModel):
     last_name: Optional[str]
     email: EmailStr
     phone_number: Optional[str]
+    plan: Optional[str]
     is_verified: bool
     profile_image: Optional[str]
     auth_provider: str

@@ -13,6 +13,7 @@ class UserModel(Document):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: EmailStr
+    plan:str="free"
     phone_number: Optional[str] = None
     password: Optional[str] = None
     is_verified: bool = False

@@ -1,0 +1,69 @@
+from fastapi import APIRouter, HTTPException,status
+from typing import List
+from api_naturalize.payments.models.payments_model import PaymentsModel
+from api_naturalize.payments.schemas.payments_schemas import PaymentsCreate, PaymentsUpdate, PaymentsResponse
+
+router = APIRouter(prefix="/paymentss", tags=["paymentss"])
+
+# GET all paymentss
+@router.get("/", response_model=List[PaymentsResponse],status_code=status.HTTP_200_OK)
+async def get_all_paymentss(skip: int = 0, limit: int = 10):
+    
+    """
+    Get all paymentss with pagination
+    """
+    paymentss = await PaymentsModel.find_all().skip(skip).limit(limit).to_list()
+    return paymentss
+
+# GET payments by ID
+@router.get("/{payments_id}", response_model=PaymentsResponse,status_code=status.HTTP_200_OK)
+async def get_payments(payments_id: str):
+    
+    """
+    Get payments by ID
+    """
+    payments = await PaymentsModel.get(payments_id)
+    if not payments:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payments not found")
+    return payments
+
+# POST create new payments
+@router.post("/", response_model=PaymentsResponse,status_code=status.HTTP_201_CREATED)
+async def create_payments(payments_data: PaymentsCreate):
+    
+    """
+    Create a new payments
+    """
+    payments_dict = payments_data.model_dump()
+    payments = PaymentsModel(**payments_dict)
+    await payments.create()
+    return payments
+
+# PATCH update payments
+@router.patch("/{payments_id}", response_model=PaymentsResponse,status_code=status.HTTP_200_OK)
+async def update_payments(payments_id: str, payments_data: PaymentsUpdate):
+    
+    """
+    Update payments information
+    """
+    payments = await PaymentsModel.get(payments_id)
+    if not payments:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payments not found")
+
+    update_data = payments_data.model_dump(exclude_unset=True)
+    await payments.update({"$set": update_data})
+    return await PaymentsModel.get(payments_id)
+
+# DELETE payments
+@router.delete("/{payments_id}",status_code=status.HTTP_200_OK)
+async def delete_payments(payments_id: str):
+    
+    """
+    Delete payments by ID
+    """
+    payments = await PaymentsModel.get(payments_id)
+    if not payments:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payments not found")
+
+    await payments.delete()
+    return {"message": "Payments deleted successfully"}
