@@ -44,10 +44,13 @@ async def create_payments(payments_data: PaymentsCreate,user_data:dict=Depends(g
     """
     db_user=await UserModel.get(user_data["user_id"])
     if not db_user:
-        HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User does not exist")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User does not exist")
     payments_dict = payments_data.model_dump()
     payments_dict["user_id"]=db_user.id
     payments = PaymentsModel(**payments_dict)
+    await db_user.update(
+        {"$set": {"plan": payments_data.subscription_name}}
+    )
     await payments.create()
     return payments
 
