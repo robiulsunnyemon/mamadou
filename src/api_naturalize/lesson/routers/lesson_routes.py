@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException,status
 from typing import List
-
 from fastapi.params import Depends
-
 from api_naturalize.answer.models.answer_model import AnswerModel
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.lesson.models.lesson_model import LessonModel

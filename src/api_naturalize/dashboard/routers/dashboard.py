@@ -298,7 +298,9 @@ async def get_extended_dashboard_stats(
         updated_at=user.updated_at,
         role=user.role,
         otp=user.otp,
+        plan=user.plan,
         account_status=user.account_status
+
     )
 
     # Get total_score from LeaderBoardModel
@@ -918,7 +920,9 @@ async def get_users_by_status(
             updated_at=user.updated_at,
             role=user.role,
             otp=user.otp,
-            account_status=user.account_status
+            account_status=user.account_status,
+            plan=user.plan
+
         ))
 
     return user_responses

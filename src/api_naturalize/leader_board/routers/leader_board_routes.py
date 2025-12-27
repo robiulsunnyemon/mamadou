@@ -29,7 +29,7 @@ async def get_all_leader_boards(skip: int = 0, limit: int = 10):
     leader_boards = (
         await LeaderBoardModel
         .find_all()
-        .sort(-LeaderBoardModel.total_score)   # 🔥 বেশি score আগে
+        .sort(-LeaderBoardModel.total_score)   #  বেশি score আগে
         .skip(skip)
         .limit(limit)
         .to_list()

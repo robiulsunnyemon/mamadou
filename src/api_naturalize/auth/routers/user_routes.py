@@ -175,6 +175,7 @@ async def get_extended_dashboard_stats(user: dict = Depends(get_user_info)):
         updated_at=db_user.updated_at,
         role=db_user.role,
         otp=db_user.otp,
+        plan=db_user.plan,
         account_status=db_user.account_status
     )
 
