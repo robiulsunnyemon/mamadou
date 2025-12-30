@@ -85,12 +85,12 @@ async def update_profile_image( # ফাংশন নাম প্রাসঙ�
         profile_image: Annotated[UploadFile, File()],
         user: dict = Depends(get_user_info)
 ):
-    # ১. ইউজার খুঁজে বের করা
+
     db_user = await UserModel.get(user["user_id"])
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    # ২. ফাইল সেভ করার লজিক
+
     file_extension = Path(profile_image.filename).suffix
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = Path(UPLOAD_DIR) / unique_filename
@@ -104,12 +104,11 @@ async def update_profile_image( # ফাংশন নাম প্রাসঙ�
             detail=f"Image upload failed: {str(e)}"
         )
 
-    # ৩. URL তৈরি করা
-    # প্রোডাকশনে https নিশ্চিত করতে আপনার লজিক ঠিক আছে
+
     base_url = str(request.base_url).replace("http://", "https://")
     image_url = f"{base_url}static/{unique_filename}"
 
-    # ৪. ডাটাবেস আপডেট (সঠিক পদ্ধতি)
+
     await db_user.set({UserModel.profile_image: image_url})
 
     return {

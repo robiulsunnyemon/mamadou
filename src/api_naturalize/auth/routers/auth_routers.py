@@ -1,24 +1,18 @@
 from fastapi import APIRouter, HTTPException, Depends,status
-from typing import List
 from fastapi.security import OAuth2PasswordRequestForm
 from api_naturalize.auth.models.user_model import UserModel
 from api_naturalize.auth.schemas.user_schemas import UserCreate, UserUpdate, UserResponse, VerifyOTP, ResetPasswordRequest, \
     ResendOTPRequest
-from api_naturalize.dashboard.routers.dashboard import get_in_progress_lessons
-from api_naturalize.dashboard.schemas.dashboard import ExtendedDashboardResponse
-from api_naturalize.leader_board.models.leader_board_model import LeaderBoardModel
-from api_naturalize.lesson.models.lesson_model import LessonModel
 from api_naturalize.notification.routers.notification_routes import create_notification
 from api_naturalize.notification.schemas.notification_schemas import NotificationCreate
-from api_naturalize.question.models.question_model import QuestionModel
-
-from api_naturalize.utils.email_config import SendOtpModel
+from api_naturalize.utils.email_config import SendOtpModel, send_otp
 from api_naturalize.utils.get_hashed_password import get_hashed_password,verify_password
 from api_naturalize.utils.otp_generate import generate_otp
 from api_naturalize.utils.token_generation import create_access_token
 import requests
-
 from api_naturalize.utils.user_role import UserRole
+
+
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -41,7 +35,7 @@ async def create_user(user: UserCreate):
     )
     await new_user.insert()
     send_otp_data = SendOtpModel(email=new_user.email, otp=new_user.otp)
-    ##await send_otp(send_otp_data)
+    await send_otp(send_otp_data)
     return new_user
 
 
@@ -66,7 +60,7 @@ async def create_admin(user: UserCreate):
     )
     await new_user.insert()
     send_otp_data = SendOtpModel(email=new_user.email, otp=new_user.otp)
-    ##await send_otp(send_otp_data)
+    await send_otp(send_otp_data)
     return new_user
 
 
@@ -128,7 +122,7 @@ async def resend_otp(request: ResendOTPRequest):
     db_user.otp=otp
     await db_user.save()
     send_otp_data = SendOtpModel(email=db_user.email, otp=db_user.otp)
-    ##await send_otp(send_otp_data)
+    await send_otp(send_otp_data)
 
 
     return {
