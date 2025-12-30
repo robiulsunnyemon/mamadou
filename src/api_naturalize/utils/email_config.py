@@ -7,7 +7,7 @@ import os
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 EMAIL = os.getenv("EMAIL")
 HOST_NAME = os.getenv("HOST_NAME")
-PORT=os.getenv("PORT")
+
 
 
 # 🔹 Pydantic v2 model
@@ -31,7 +31,7 @@ async def send_otp(otp_user: SendOtpModel):
     await aiosmtplib.send(
         message,
         hostname=HOST_NAME,
-        port=int(PORT),
+        port=465,
         use_tls=True,
         username=EMAIL,
         password=APP_PASSWORD,
