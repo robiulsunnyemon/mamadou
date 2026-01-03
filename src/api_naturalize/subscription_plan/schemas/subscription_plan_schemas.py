@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
 from datetime import datetime
 
 # Schema for creating new SubscriptionPlan
@@ -14,7 +14,7 @@ class SubscriptionplanUpdate(BaseModel):
     title: Optional[str] = None
     plan_price: Optional[float] = None
     duration: Optional[str] = None
-    features: Optional[List[str] = None
+    features: Optional[List[str]] = None
 
 # Schema for SubscriptionPlan response
 class SubscriptionplanResponse(BaseModel):
