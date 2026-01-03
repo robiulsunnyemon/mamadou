@@ -87,11 +87,11 @@ async def delete_payments(payments_id: str):
 
 
 
-@router.get("/payments/total-last-12-months")
+@router.get("/payments/total-last-30days")
 async def get_total_amount_last_6_months():
     try:
 
-        six_months_ago = datetime.now(timezone.utc) - timedelta(days=365)
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=30)
 
 
         pipeline = [
@@ -127,9 +127,54 @@ async def get_total_amount_last_6_months():
         return {
             "status": "success",
             "total_amount": round(total_sum, 2),
-            "time_period": "last 12 months"
+            "time_period": "last 30days"
         }
 
     except Exception as e:
         print(f"Stats Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/user/free-plan", status_code=status.HTTP_200_OK)
+async def get_free_plan_member():
+    free_plan_members = await PaymentsModel.find(
+        PaymentsModel.subscription_name == "Free Plan"
+    ).count()
+
+    total_user = await UserModel.find_all().count()
+
+    return {
+        "free_plan_member": free_plan_members,
+        "total_user": total_user
+    }
+
+
+
+
+@router.get("/user/basic-plan", status_code=status.HTTP_200_OK)
+async def get_basic_plan_member():
+    basic_plan_members = await PaymentsModel.find(
+        PaymentsModel.subscription_name == "Basic Plan"
+    ).count()
+
+    total_user = await UserModel.find_all().count()
+
+    return {
+        "basic_plan_member": basic_plan_members,
+        "total_user": total_user
+    }
+
+
+
+@router.get("/user/premium-plan", status_code=status.HTTP_200_OK)
+async def get_premium_plan_member():
+    premium_plan_members = await PaymentsModel.find(
+        PaymentsModel.subscription_name == "Premium Plan"
+    ).count()
+
+    total_user = await UserModel.find_all().count()
+
+    return {
+        "premium_plan_member": premium_plan_members,
+        "total_user": total_user
+    }
