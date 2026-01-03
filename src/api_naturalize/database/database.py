@@ -12,6 +12,7 @@ from api_naturalize.notification.models.notification_model import notificationMo
 from api_naturalize.payments.models.payments_model import PaymentsModel
 from api_naturalize.progress_lesson.models.progress_lesson_model import ProgressLessonModel
 from api_naturalize.question.models.question_model import QuestionModel
+from api_naturalize.subscription_plan.models.subscription_plan_model import SubscriptionPlanModel
 from api_naturalize.time_storage.models.time_storage_model import TimeStorageModel
 
 # MongoDB connection settings
@@ -43,7 +44,8 @@ async def initialize_database():
             LeaderBoardModel,
             TimeStorageModel,
             notificationModel,
-            PaymentsModel
+            PaymentsModel,
+            SubscriptionPlanModel
 
 
         ],

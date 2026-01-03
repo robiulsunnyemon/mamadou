@@ -16,6 +16,9 @@ from api_naturalize.dashboard.routers.dashboard import router as dashboard_route
 from fastapi.staticfiles import StaticFiles
 from api_naturalize.time_storage.routers.time_storage_routes import router as time_storage_router
 from api_naturalize.notification.routers.notification_routes import router as notification_router
+from api_naturalize.subscription_plan.routers.subscription_plan_routes import router as subscription_router
+
+
 
 @asynccontextmanager
 async def lifespan_context(_: FastAPI):
@@ -69,3 +72,4 @@ app.include_router(leaderboard_router,prefix="/api/v1")
 app.include_router(time_storage_router,prefix="/api/v1")
 app.include_router(notification_router,prefix="/api/v1")
 app.include_router(payment_router,prefix="/api/v1")
+app.include_router(subscription_router,prefix="/api/v1")
