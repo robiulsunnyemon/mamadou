@@ -129,9 +129,6 @@ async def create_bulk_questions(bulk_data: BulkQuestionCreate):
         questions=created_questions
     )
 
-
-
-
 @router.delete("/delete/all", status_code=status.HTTP_200_OK)
 async def all_question_delete():
     try:

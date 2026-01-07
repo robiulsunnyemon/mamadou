@@ -128,21 +128,6 @@ async def get_all_user(
 
     return res
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # POST create new lesson
 @router.post("/create/lesson",status_code=status.HTTP_201_CREATED)
 async def create_lesson(
@@ -161,19 +146,15 @@ async def create_lesson(
     if not db_course:
         raise  HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Course is not found")
 
-
     """
     Create a new lesson
     """
-
 
     file_extension = Path(image_url.filename).suffix
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = Path(UPLOAD_DIR) / unique_filename
 
-
     try:
-
         with open(file_path, "wb") as buffer:
 
             shutil.copyfileobj(image_url.file, buffer)
@@ -183,7 +164,6 @@ async def create_lesson(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Image upload failed: {e}"
         )
-
 
     base_url = str(request.base_url).replace("http://", "https://")
     image_url = f"{base_url}static/{unique_filename}"
@@ -196,25 +176,9 @@ async def create_lesson(
         "course_id":course_id
     }
 
-
-
-
     lesson = LessonModel(**lesson_data)
     await lesson.create()
     return lesson
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @router.get("/lesson/all",response_model=List[LessonResponseAdmin], status_code=status.HTTP_200_OK)
@@ -228,10 +192,7 @@ async def get_all_lesson(
     return lessons
 
 
-
-
-
-# GET lesson by Course ID - simplified
+# GET lesson by Course ID
 @router.get("/lesson/by_course_id/{id}",response_model=List[LessonRes], status_code=status.HTTP_200_OK)
 async def get_lesson(id: str):
     """
@@ -241,7 +202,6 @@ async def get_lesson(id: str):
     db_course=await CourseModel.get(id)
     if not db_course:
         raise HTTPException(status_code=404, detail="Course not found")
-
 
     lessons = await LessonModel.find(LessonModel.course_id==id).to_list()
 

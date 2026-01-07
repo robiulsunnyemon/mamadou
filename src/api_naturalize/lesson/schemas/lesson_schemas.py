@@ -13,11 +13,8 @@ class LessonCreate(BaseModel):
     description: str
     image_url: str
     course_id: str
-
 class LessonRes(LessonCreate):
     id:str
-
-
 
 # Schema for updating Lesson
 class LessonUpdate(BaseModel):
@@ -26,11 +23,7 @@ class LessonUpdate(BaseModel):
     image_url: Optional[str] = None
     course_id: Optional[str] = None
 
-
-
-
 # Schema for Lesson response
-
 class LessonResponseAdmin(BaseModel):
     id: str
     name: str

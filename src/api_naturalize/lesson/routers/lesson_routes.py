@@ -149,15 +149,6 @@ async def delete_lesson(id: str):
     await lesson.delete()
     return {"message": "Lesson deleted successfully"}
 
-
-
-
-
-
-
-
-
-
 # POST create bulk lessons
 @router.post("/bulk", response_model=BulkLessonResponse, status_code=status.HTTP_201_CREATED)
 async def create_bulk_lessons(bulk_data: BulkLessonCreate):
@@ -191,7 +182,6 @@ async def create_bulk_lessons(bulk_data: BulkLessonCreate):
         created_count=len(created_lessons),
         lessons=created_lessons
     )
-
 
 @router.delete("/delete/all", status_code=status.HTTP_200_OK)
 async def all_lesson_delete():

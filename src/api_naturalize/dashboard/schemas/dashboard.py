@@ -57,9 +57,6 @@ class MostDifficultQuestionsResponse(BaseModel):
     lesson_name: str
     course_name: str
 
-
-
-
 # Schema for user statistics
 class UserStatsResponse(BaseModel):
     total_users: int
@@ -68,28 +65,18 @@ class UserStatsResponse(BaseModel):
     suspended_users: int
     verified_users: int
     unverified_users: int
-
-
 class MonthlyRegistrationResponse(BaseModel):
     year: int
     month: int
     month_name: str
     registrations: int
-
-
 class UserGrowthResponse(BaseModel):
     period: str
     total_users: int
     new_users: int
     growth_rate: float
-
-
 class UserStatusFilter(str, Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
     SUSPEND = "SUSPEND"
     ALL = "ALL"
-
-
-
-
