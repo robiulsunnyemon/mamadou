@@ -18,9 +18,6 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 #     """
 #     notifications = await notificationModel.find_all().skip(skip).limit(limit).to_list()
 #     return notifications
-#
-#
-
 
 @router.get("/all/me", response_model=List[NotificationResponse])
 async def get_notification_all_for_me(user_data: dict = Depends(get_user_info)):
@@ -36,13 +33,6 @@ async def get_notification_all_for_me(user_data: dict = Depends(get_user_info)):
 
     return notifications
 
-
-
-
-
-
-
-#
 # # GET notification by ID
 # @router.get("/{notification_id}", response_model=NotificationResponse,status_code=status.HTTP_200_OK)
 # async def get_notification(notification_id: str):
@@ -54,7 +44,6 @@ async def get_notification_all_for_me(user_data: dict = Depends(get_user_info)):
 #     if not notification:
 #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="notification not found")
 #     return notification
-
 
 
 # # POST create new notification
@@ -88,12 +77,6 @@ async def create_lesson_notification(lesson_id:str,user:dict=Depends(get_user_in
     )
     await new_notification.insert()
     return new_notification
-
-
-
-
-
-
 
 # DELETE notification
 @router.delete("/{notification_id}",status_code=status.HTTP_200_OK)

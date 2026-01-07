@@ -45,7 +45,6 @@ class FilteredLessonResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
 class DashboardStatsResponse(BaseModel):
     total_questions: int
     total_lessons: int

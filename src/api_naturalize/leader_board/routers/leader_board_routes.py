@@ -19,17 +19,13 @@ async def get_all_leader_boards(skip: int = 0, limit: int = 10):
     leader_boards = await LeaderBoardModel.find_all().skip(skip).limit(limit).to_list()
     return leader_boards
 
-
-
-
-
 @router.get("/filter", response_model=list[Leaderboard_Response])
 async def get_all_leader_boards(skip: int = 0, limit: int = 10):
 
     leader_boards = (
         await LeaderBoardModel
         .find_all()
-        .sort(-LeaderBoardModel.total_score)   #  বেশি score আগে
+        .sort(-LeaderBoardModel.total_score)  
         .skip(skip)
         .limit(limit)
         .to_list()
@@ -55,17 +51,6 @@ async def get_all_leader_boards(skip: int = 0, limit: int = 10):
         res.append(Leaderboard_Response(**data))
 
     return res
-
-
-
-
-
-
-
-
-
-
-
 
 # GET leader_board by ID
 @router.get("/{id}", response_model=LeaderboardResponse,status_code=status.HTTP_200_OK)

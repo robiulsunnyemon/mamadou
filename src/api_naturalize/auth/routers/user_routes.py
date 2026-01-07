@@ -13,14 +13,10 @@ from typing import Annotated
 import shutil
 import uuid
 
-
-
-
 UPLOAD_DIR = "uploaded_images"
 Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
-
 
 # GET all users
 @user_router.get("/", response_model=List[UserResponse],status_code=status.HTTP_200_OK)
@@ -30,7 +26,6 @@ async def get_all_users(skip: int = 0, limit: int = 20):
     """
     users = await UserModel.find_all().sort("-created_at").skip(skip).limit(limit).to_list()
     return users
-
 
 # GET user by ID
 @user_router.get("/{id}", response_model=UserResponse,status_code=status.HTTP_200_OK)
@@ -42,7 +37,6 @@ async def get_user(id: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
 
 @user_router.patch("/update/info", status_code=status.HTTP_200_OK)
 async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_info)):
@@ -60,27 +54,12 @@ async def update_user(user_data: UserUpdate, user_info: dict = Depends(get_user_
     if not update_data:
         raise HTTPException(status_code=400, detail="No data provided for update")
 
-
     await user_obj.set(update_data)
-
 
     return {"message":"Successfully update profile"}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @user_router.post("/update_profile_image", status_code=status.HTTP_201_CREATED)
-async def update_profile_image( # ফাংশন নাম প্রাসঙ্গিক করলাম
+async def update_profile_image(
         request: Request,
         profile_image: Annotated[UploadFile, File()],
         user: dict = Depends(get_user_info)
@@ -116,26 +95,6 @@ async def update_profile_image( # ফাংশন নাম প্রাসঙ�
         "profile_image": image_url
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # DELETE user
 @user_router.delete("/{id}",status_code=status.HTTP_200_OK)
 async def delete_user(id: str):
@@ -148,9 +107,6 @@ async def delete_user(id: str):
 
     await user.delete()
     return {"message": "User deleted successfully"}
-
-
-
 
 @user_router.get("/info/me", response_model=ExtendedAppUserResponse,status_code=status.HTTP_200_OK)
 async def get_extended_dashboard_stats(user: dict = Depends(get_user_info)):

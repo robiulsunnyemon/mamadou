@@ -319,9 +319,5 @@ async def delete_{snake_name}({snake_name}_id: str):
     with open(os.path.join(main_folder, "routers", f"{snake_name}_routes.py"), "w", encoding='utf-8') as f:
         f.write(router_content)
 
-
-
-
-
 if __name__ == "__main__":
     create_model_structure()

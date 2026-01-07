@@ -46,8 +46,6 @@ async def initialize_database():
             notificationModel,
             PaymentsModel,
             SubscriptionPlanModel
-
-
         ],
     )
 
@@ -62,7 +60,6 @@ async def close_database():
     if client:
         client.close()
         print("👋 MongoDB connection closed.")
-
 
 def get_database():
     """

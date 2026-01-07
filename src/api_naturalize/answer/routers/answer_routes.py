@@ -52,7 +52,7 @@ async def create_answer(answer_data: AnswerCreate, user: dict = Depends(get_user
     if not db_question:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    # Check if user already submitted this question - Beanie syntax ঠিক করুন
+    # Check if user already submitted this question
     db_submitted_answer = await AnswerModel.find_one(
         AnswerModel.question_id == answer_data.question_id,
         AnswerModel.user_id == user_id

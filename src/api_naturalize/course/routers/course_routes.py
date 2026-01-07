@@ -107,17 +107,6 @@ async def get_course(id: str):
 
     return CourseResponse(**course_dict)
 
-
-
-
-
-
-
-
-
-
-
-
 # POST create new course
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_course(course_data: CourseCreate):
